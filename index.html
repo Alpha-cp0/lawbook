@@ -1,0 +1,1145 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="변시 법전">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#fbf9f3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>변시 법전</title>
+<style>
+:root {
+  --paper: #fdfcf8; --paper2: #f1efe8; --ink: #111; --ink2: #3c3c3c; --mute: #7a7a7a;
+  --rule: #111; --line: #d6d3ca; --shade: #d9d9d9; --shade-ink: #111; --hl: #ffe680; --chip: #111; --chip-ink: #fdfcf8;
+  --fs: 20px; --lh: 1.45; --topH: 54px; --runH: 34px; --tabH: 58px; --scrubH: 46px;
+  --sT: env(safe-area-inset-top, 0px); --sB: env(safe-area-inset-bottom, 0px); --gL: max(16px, env(safe-area-inset-left, 0px)); --gR: max(16px, env(safe-area-inset-right, 0px));
+  --serif: "LBSerif", "Noto Serif CJK KR", "Noto Serif KR", serif;
+  --sans: "LBSans", "Noto Sans CJK KR", "Noto Sans KR", system-ui, sans-serif;
+}
+:root[data-theme="dark"] {
+  --paper: #121212; --paper2: #1d1d1d; --ink: #e8e6e1; --ink2: #c4c1ba; --mute: #8c8a85;
+  --rule: #e8e6e1; --line: #333; --shade: #34332f; --shade-ink: #f1efe8; --hl: #6a5a12; --chip: #e8e6e1; --chip-ink: #121212;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #121212; --paper2: #1d1d1d; --ink: #e8e6e1; --ink2: #c4c1ba; --mute: #8c8a85;
+    --rule: #e8e6e1; --line: #333; --shade: #34332f; --shade-ink: #f1efe8; --hl: #6a5a12; --chip: #e8e6e1; --chip-ink: #121212;
+  }
+}
+[hidden] { display: none !important; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; background: var(--paper); color: var(--ink); font-family: var(--serif); }
+body { overflow: hidden; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+header, nav, .sheet, #toast, #run, input, select { font-family: var(--sans); }
+
+/* ── 상단 막대 ── */
+header#top { position: fixed; top: 0; left: 0; right: 0; height: calc(var(--topH) + var(--sT)); display: flex; align-items: center; gap: 2px;
+  padding: var(--sT) max(4px, env(safe-area-inset-right, 0px)) 0 max(4px, env(safe-area-inset-left, 0px)); background: var(--paper); border-bottom: 1px solid var(--line); z-index: 20; }
+.ib { min-width: 44px; height: 44px; border-radius: 10px; font-size: 22px; display: inline-flex; align-items: center; justify-content: center; }
+.ib:active, .lawname:active { background: var(--paper2); }
+.lawname { flex: 1; min-width: 0; height: 44px; display: flex; align-items: center; gap: 4px; padding: 0 6px; border-radius: 10px; font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+.lawname span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lawname .caret { font-size: 13px; color: var(--mute); }
+.jump { font-size: 16px; padding: 0 10px; border: 1.5px solid var(--rule); height: 36px; border-radius: 4px; gap: 1px; white-space: nowrap; }
+.jump b { font-size: 18px; }
+
+/* ── 쪽머리 (법전 머리말) ── */
+#run { position: fixed; top: calc(var(--topH) + var(--sT)); left: 0; right: 0; height: var(--runH); display: flex; align-items: flex-end; gap: 8px;
+  padding: 0 var(--gR) 4px var(--gL); background: var(--paper); z-index: 19; font-size: 14px; font-weight: 700; }
+#run::after { content: ""; position: absolute; left: calc(var(--gL) - 2px); right: calc(var(--gR) - 2px); bottom: 0; border-bottom: 1.5px solid var(--rule); }
+#run .l { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#run .r { flex: none; }
+
+/* ── 본문 ── */
+main#stage { position: fixed; top: calc(var(--topH) + var(--runH) + var(--sT)); bottom: calc(var(--tabH) + var(--scrubH) + var(--sB)); left: 0; right: 0; }
+.pane { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px var(--gR) 45vh var(--gL);
+  font-size: var(--fs); line-height: var(--lh); text-align: justify; word-break: break-all; }
+.pane.cols { overflow-y: hidden; overflow-x: auto; padding: 12px var(--gR) 14px var(--gL); columns: 2; column-gap: 26px; column-rule: 1px solid var(--rule);
+  column-fill: auto; height: 100%; }
+section.law p { margin: 0; }
+.pane.paged { padding: 0 var(--gR) 0 var(--gL); scroll-snap-type: y proximity; }
+.book .pg { display: flex; box-sizing: border-box; padding: 12px 0 14px; border-bottom: 1px dashed var(--rule); scroll-snap-align: start; }
+.book .col { flex: 1 1 0; min-width: 0; }
+.book .col:first-child { padding-right: 13px; } .book .col + .col { padding-left: 13px; border-left: 1px solid var(--rule); }
+.book .col > :first-child { margin-top: 0; }
+.art.cont { padding-top: 0; }
+h1.ttl { font: 900 1.28em/1.3 var(--sans); margin: .2em 0 0; text-align: left; word-break: keep-all; letter-spacing: -.01em; }
+.en { font-size: .78em; margin: .25em 0 .2em .4em; }
+.src { font: .64em/1.4 var(--sans); color: var(--mute); margin: 0 0 .9em .55em; text-align: left; word-break: keep-all; }
+.src.warn { color: var(--ink); background: var(--shade); padding: .3em .5em; border-radius: 3px; display: inline-block; }
+.toc { margin: .4em 0 1em; font-size: .86em; line-height: 1.5; text-align: left; }
+.toc button { display: flex; width: 100%; text-align: left; gap: .3em; padding: .05em 0; }
+.toc button .nm { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toc button .nm b { font-family: var(--sans); font-weight: 700; }
+.toc button .dots { flex: 1 0 .8em; border-bottom: 1px dotted var(--mute); margin-bottom: .45em; }
+.toc button .rg { flex: none; font-family: var(--sans); font-size: .86em; letter-spacing: -.02em; white-space: nowrap; }
+.toc .t1 { padding-left: 0; } .toc .t2 { padding-left: .9em; } .toc .t3 { padding-left: 1.8em; } .toc .t4 { padding-left: 2.6em; } .toc .t5 { padding-left: 3.4em; }
+.hd { margin: 1.1em 0 .55em; text-align: left; word-break: keep-all; line-height: 1.4; break-after: avoid; }
+.hd b { font-family: var(--sans); font-weight: 700; }
+.hd.l0 { font-size: 1.18em; padding-left: .8em; } .hd.l1 { font-size: 1.08em; padding-left: 1.5em; }
+.hd.l2 { font-size: 1em; padding-left: 2.2em; } .hd.l3 { font-size: .95em; padding-left: 2.8em; } .hd.l4 { font-size: .92em; padding-left: 3.3em; }
+.hd .tg { font-weight: 400; }
+.note { margin: .5em 0; }
+.note.cap { text-align: center; font-family: var(--sans); font-weight: 700; margin-top: .8em; }
+.art { padding: .12em 0 .32em; scroll-margin-top: 4px; }
+.art.flash { animation: flash 1.8s ease-out; }
+@keyframes flash { 0%, 35% { background: var(--hl); } 100% { background: transparent; } }
+.art p.a { padding-left: 1em; text-indent: -1em; }
+.art p.h { padding-left: 1em; }
+.art p.ho { padding-left: 2.1em; text-indent: -1.1em; }
+.art p.mok { padding-left: 3.1em; text-indent: -1.1em; }
+.art p.mok2 { padding-left: 4.1em; text-indent: -1.1em; }
+.art p.nt { padding-left: 1em; }
+b.ah { font-family: var(--sans); font-weight: 700; font-size: .95em; letter-spacing: -.01em; }
+.art.del { color: var(--ink2); }
+.tg { font-size: .76em; letter-spacing: -.02em; }
+.sh { background: var(--shade); color: var(--shade-ink); padding: .2em .35em .25em; margin: .25em 0 .35em; border-radius: 2px; }
+.sh .ef { display: block; font-size: .78em; font-family: var(--sans); font-weight: 700; margin-top: .1em; }
+.badge { display: inline-block; font: 700 .6em/1 var(--sans); padding: .32em .45em; border-radius: 3px; vertical-align: .18em; margin-left: .35em;
+  border: 1px solid var(--rule); white-space: nowrap; text-indent: 0; }
+.badge.new { background: var(--chip); color: var(--chip-ink); }
+.xref { color: inherit; text-decoration: underline; text-decoration-color: var(--mute); text-underline-offset: 3px; }
+mark { background: var(--hl); color: inherit; }
+
+/* ── 하단 탭 ── */
+nav#tabs { position: fixed; bottom: 0; left: 0; right: 0; height: calc(var(--tabH) + var(--sB)); padding: 0 env(safe-area-inset-right, 0px) var(--sB) env(safe-area-inset-left, 0px); display: flex; background: var(--paper); border-top: 1.5px solid var(--rule); z-index: 20; }
+nav#tabs button { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border-right: 1px solid var(--line); padding: 0 2px; }
+nav#tabs button:last-child { border-right: 0; }
+nav#tabs .tl { font-size: 15px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+nav#tabs .tn { font-size: 13px; color: var(--ink2); font-family: var(--serif); }
+nav#tabs button.on { background: var(--chip); color: var(--chip-ink); }
+nav#tabs button.on .tn { color: var(--chip-ink); }
+
+/* ── 시트 ── */
+#scrim { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 30; }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; max-height: 88vh; padding-bottom: var(--sB); display: flex; flex-direction: column; background: var(--paper); z-index: 31;
+  border-top: 2px solid var(--rule); box-shadow: 0 -8px 30px rgba(0,0,0,.2); }
+.sheet.full { top: 0; padding-top: var(--sT); max-height: none; border-top: 0; }
+.sheet-head { display: flex; align-items: center; padding: 8px 6px 6px 16px; border-bottom: 1.5px solid var(--rule); }
+.sheet-head h2 { flex: 1; margin: 0; font-size: 19px; }
+.sheet-body { overflow-y: auto; padding: 6px var(--gR) 26px var(--gL); font-size: 18px; }
+.sgrp { margin: 10px 4px 2px; font-size: 14px; font-weight: 700; color: var(--ink2); border-bottom: 1px solid var(--rule); padding-bottom: 3px; }
+.grp { margin: 16px 2px 4px; font-size: 16px; font-weight: 700; letter-spacing: .12em; text-align: center; }
+.row { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 12px 8px; border-bottom: 1px solid var(--line); font-family: var(--serif); }
+.row:active { background: var(--paper2); }
+.row .main { flex: 1; min-width: 0; }
+.row .sub { font-size: 13.5px; color: var(--mute); font-family: var(--sans); font-weight: 400; margin-top: 2px; }
+.row.cur { background: var(--paper2); box-shadow: inset 4px 0 0 var(--rule); }
+.seg { display: flex; gap: 6px; margin: 4px 0 10px; flex-wrap: wrap; }
+.seg button { flex: 1; min-width: 56px; padding: 10px 6px; border-radius: 4px; border: 1.5px solid var(--line); font-size: 15.5px; }
+.seg button.on { border-color: var(--rule); background: var(--chip); color: var(--chip-ink); font-weight: 700; }
+.toc2 .row { padding: 10px 8px; }
+.toc2 .lv1 { padding-left: 22px; } .toc2 .lv2 { padding-left: 38px; font-size: 16.5px; } .toc2 .lv3 { padding-left: 52px; font-size: 16px; } .toc2 .lv4 { padding-left: 64px; font-size: 15.5px; }
+
+/* 조문 이동 */
+.jumpdisp { font: 30px var(--serif); text-align: center; margin: 6px 0 12px; padding: 10px; border: 1.5px solid var(--rule); min-height: 62px; border-radius: 4px; }
+.keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.keys button { height: 58px; border-radius: 6px; background: var(--paper2); font-size: 25px; font-weight: 700; }
+.keys button:active { background: var(--shade); }
+.keys .go { background: var(--chip); color: var(--chip-ink); }
+
+/* 검색 */
+.sinput { display: flex; gap: 8px; margin: 6px 0 8px; }
+.sinput input { flex: 1; min-width: 0; font-size: 18px; padding: 11px 12px; border-radius: 4px; border: 1.5px solid var(--rule); background: var(--paper); color: var(--ink); }
+.sinput button { padding: 0 16px; border-radius: 4px; background: var(--chip); color: var(--chip-ink); font-size: 17px; font-weight: 700; }
+.hit { display: block; width: 100%; text-align: left; padding: 10px 4px; border-bottom: 1px solid var(--line); font-size: 17px; line-height: 1.55; font-family: var(--serif); }
+.hit .hl { font-family: var(--sans); font-weight: 700; font-size: 15.5px; }
+.hit .hs { color: var(--ink2); font-size: 16px; }
+.empty { color: var(--mute); text-align: center; padding: 30px 10px; font-size: 16px; font-family: var(--sans); }
+
+/* 설정 */
+.set { padding: 12px 2px; border-bottom: 1px solid var(--line); }
+.set > label { display: block; font-weight: 700; margin-bottom: 6px; font-size: 17px; }
+.set input[type=range] { width: 100%; accent-color: var(--ink); }
+.preview { margin-top: 8px; padding: 8px 10px; border: 1px solid var(--line); background: var(--paper); text-align: justify; font-family: var(--serif); }
+.btn { display: block; width: 100%; padding: 14px; border-radius: 6px; background: var(--chip); color: var(--chip-ink); font-size: 17px; font-weight: 700; margin: 10px 0; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--rule); }
+.btn[disabled] { opacity: .45; }
+.prog { height: 6px; background: var(--paper2); overflow: hidden; margin: 6px 0; border-radius: 3px; }
+.prog i { display: block; height: 100%; width: 0; background: var(--ink); transition: width .2s; }
+.small { font-size: 13.5px; color: var(--mute); line-height: 1.55; font-family: var(--sans); font-weight: 400; }
+.res { font: 15px/1.6 var(--sans); padding: 8px 10px; border: 1px solid var(--line); margin-top: 6px; }
+
+#toast { position: fixed; left: 50%; bottom: calc(var(--tabH) + var(--scrubH) + var(--sB) + 14px); transform: translateX(-50%); background: var(--chip); color: var(--chip-ink); padding: 11px 16px;
+  border-radius: 6px; font-size: 15.5px; z-index: 50; max-width: 90vw; text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
+
+/* ── 넘김 막대 ── */
+#scrub { position: fixed; left: 0; right: 0; bottom: calc(var(--tabH) + var(--sB)); height: var(--scrubH); background: var(--paper); border-top: 1px solid var(--line); z-index: 20; padding: 0 calc(var(--gR) - 4px) 0 calc(var(--gL) - 4px); }
+#scrubTicks { position: absolute; left: calc(var(--gL) + 10px); right: calc(var(--gR) + 10px); top: 50%; height: 14px; margin-top: -7px; pointer-events: none; }
+#scrubTicks i { position: absolute; top: 3px; width: 1px; height: 8px; background: var(--mute); }
+#scrubTicks i.mj { top: 0; height: 14px; width: 2px; background: var(--ink); }
+#scrubR { -webkit-appearance: none; appearance: none; position: relative; width: 100%; height: 100%; margin: 0; background: transparent; touch-action: none; }
+#scrubR::-webkit-slider-runnable-track { height: 4px; background: var(--line); border-radius: 2px; }
+#scrubR::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; margin-top: -12px; border-radius: 50%; background: var(--chip); border: 3px solid var(--paper); box-shadow: 0 0 0 1.5px var(--rule); }
+#scrubR::-moz-range-track { height: 4px; background: var(--line); }
+#scrubR::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: var(--chip); border: 3px solid var(--paper); }
+#scrubTip { position: fixed; bottom: calc(var(--tabH) + var(--scrubH) + var(--sB) + 8px); transform: translateX(-50%); background: var(--chip); color: var(--chip-ink);
+  padding: 8px 14px; border-radius: 6px; z-index: 60; text-align: center; font-family: var(--sans); max-width: 82vw; box-shadow: 0 6px 18px rgba(0,0,0,.25); pointer-events: none; }
+#scrubTip span { display: block; font-size: 13px; font-weight: 400; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#scrubTip b { display: block; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+</style>
+</head>
+<body>
+
+<header id="top">
+  <button id="btnToc" class="ib" aria-label="목차">☰</button>
+  <button id="btnLaw" class="lawname"><span id="lawTitle">법령 선택</span><span class="caret">▼</span></button>
+  <button id="btnJump" class="ib jump" aria-label="조문 이동">제<b>1</b>조</button>
+  <button id="btnSearch" class="ib" aria-label="검색">⌕</button>
+  <button id="btnSet" class="ib" aria-label="설정">⚙</button>
+</header>
+<div id="run"><span class="l" id="runL"></span><span class="r" id="runR"></span></div>
+<main id="stage"></main>
+<div id="scrub"><div id="scrubTicks"></div><input type="range" id="scrubR" min="0" max="1000" value="0" aria-label="넘김 막대"></div>
+<div id="scrubTip" hidden></div>
+<nav id="tabs"></nav>
+
+<div id="scrim" hidden></div>
+<section id="sheet" class="sheet" hidden>
+  <div class="sheet-head"><h2 id="sheetTitle"></h2><button class="ib" id="sheetClose" aria-label="닫기">✕</button></div>
+  <div id="sheetBody" class="sheet-body"></div>
+</section>
+<div id="toast" hidden></div>
+<script>
+window.LB_WEB={date:"2026. 11. 1."};
+window.LB_SEED_INDEX={"대한민국헌법": {"lsi": "61603", "ef": "19880225", "hdr": "헌법 제10호, 1987. 10. 29., 전부개정", "src": "web", "at": 1793519367546, "file": "p00.json", "key": "대한민국헌법", "n": 130}, "국적법": {"lsi": "244609", "ef": "20221001", "hdr": "법률 제18978호, 2022. 9. 15., 일부개정", "src": "web", "at": 1793519367907, "file": "p00.json", "key": "국적법", "n": 32}, "청원법": {"lsi": "224695", "ef": "20221223", "hdr": "법률 제17701호, 2020. 12. 22., 전부개정", "src": "web", "at": 1793519368733, "file": "p00.json", "key": "청원법", "n": 27}, "헌법재판소법": {"lsi": "284151", "ef": "20260312", "hdr": "법률 제21452호, 2026. 3. 12., 일부개정", "src": "web", "at": 1793519369489, "file": "p00.json", "key": "헌법재판소법", "n": 86}, "대통령직 인수에 관한 법률": {"lsi": "195072", "ef": "20170726", "hdr": "법률 제14839호, 2017. 7. 26., 타법개정", "src": "web", "at": 1793519369884, "file": "p00.json", "key": "대통령직 인수에 관한 법률", "n": 16}, "국민투표법": {"lsi": "288595", "ef": "20261002", "hdr": "법률 제21857호, 2026. 8. 4., 타법개정", "src": "web", "at": 1793519370463, "file": "p00.json", "key": "국민투표법", "n": 119}, "공직선거법": {"lsi": "285629", "ef": "20261023", "hdr": "법률 제21577호, 2026. 4. 22., 일부개정", "src": "web", "at": 1793519371664, "file": "p00.json", "key": "공직선거법", "n": 375}, "정당법": {"lsi": "285683", "ef": "20260729", "hdr": "법률 제21605호, 2026. 4. 28., 일부개정", "src": "web", "at": 1793519372271, "file": "p00.json", "key": "정당법", "n": 66}, "정치자금법": {"lsi": "285595", "ef": "20260701", "hdr": "법률 제21578호, 2026. 4. 22., 일부개정", "src": "web", "at": 1793519373016, "file": "p00.json", "key": "정치자금법", "n": 68}, "국회법": {"lsi": "289167", "ef": "20261002", "hdr": "법률 제21883호, 2026. 9. 8., 일부개정", "src": "web", "at": 1793519373635, "file": "p00.json", "key": "국회법", "n": 218}, "국정감사 및 조사에 관한 법률": {"lsi": "252535", "ef": "20230711", "hdr": "법률 제19536호, 2023. 7. 11., 일부개정", "src": "web", "at": 1793519373954, "file": "p00.json", "key": "국정감사 및 조사에 관한 법률", "n": 22}, "국회에서의 증언ㆍ감정 등에 관한 법률": {"lsi": "288597", "ef": "20261002", "hdr": "법률 제21857호, 2026. 8. 4., 타법개정", "src": "web", "at": 1793519374302, "file": "p00.json", "key": "국회에서의 증언ㆍ감정 등에 관한 법률", "n": 21}, "인사청문회법": {"lsi": "289295", "ef": "20260908", "hdr": "법률 제21884호, 2026. 9. 8., 일부개정", "src": "web", "at": 1793519374805, "file": "p00.json", "key": "인사청문회법", "n": 21}, "정부조직법": {"lsi": "285135", "ef": "20261002", "hdr": "법률 제21491호, 2026. 3. 24., 타법개정", "src": "web", "at": 1793519376095, "file": "p00.json", "key": "정부조직법", "n": 49}, "법원조직법": {"lsi": "290233", "ef": "20261002", "hdr": "법률 제22054호, 2026. 9. 29., 일부개정", "src": "web", "at": 1793519376759, "file": "p00.json", "key": "법원조직법", "n": 135}, "공소청법": {"lsi": "290007", "ef": "20261002", "hdr": "법률 제21991호, 2026. 9. 29., 일부개정", "src": "web", "at": 1793519377080, "file": "p01.json", "key": "공소청법", "n": 60}, "중대범죄수사청 조직 및 운영에 관한 법률": {"lsi": "290127", "ef": "20261002", "hdr": "법률 제22016호, 2026. 9. 29., 일부개정", "src": "web", "at": 1793519377794, "file": "p01.json", "key": "중대범죄수사청 조직 및 운영에 관한 법률", "n": 51}, "변호사법": {"lsi": "290789", "ef": "20261002", "hdr": "법률 제21857호, 2026. 8. 4., 타법개정", "src": "web", "at": 1793519378532, "file": "p01.json", "key": "변호사법", "n": 177}, "출입국관리법": {"lsi": "290729", "ef": "20261002", "hdr": "법률 제21857호, 2026. 8. 4., 타법개정", "src": "web", "at": 1793519379605, "file": "p01.json", "key": "출입국관리법", "n": 188}, "집회 및 시위에 관한 법률": {"lsi": "290129", "ef": "20261002", "hdr": "법률 제22018호, 2026. 9. 29., 일부개정", "src": "web", "at": 1793519381211, "file": "p01.json", "key": "집회 및 시위에 관한 법률", "n": 26}, "국가인권위원회법": {"lsi": "288593", "ef": "20261002", "hdr": "법률 제21857호, 2026. 8. 4., 타법개정", "src": "web", "at": 1793519381634, "file": "p01.json", "key": "국가인권위원회법", "n": 77}, "사면법": {"lsi": "290715", "ef": "20261002", "hdr": "법률 제21490호, 2026. 3. 24., 타법개정", "src": "web", "at": 1793519382092, "file": "p01.json", "key": "사면법", "n": 28}, "범죄피해자 보호법": {"lsi": "290793", "ef": "20261002", "hdr": "법률 제21857호, 2026. 8. 4., 타법개정", "src": "web", "at": 1793519382537, "file": "p01.json", "key": "범죄피해자 보호법", "n": 55}, "감사원법": {"lsi": "222549", "ef": "20201020", "hdr": "법률 제17560호, 2020. 10. 20., 일부개정", "src": "web", "at": 1793519382849, "file": "p01.json", "key": "감사원법", "n": 69}, "방송법": {"lsi": "285487", "ef": "20260421", "hdr": "법률 제21572호, 2026. 4. 21., 일부개정", "src": "web", "at": 1793519383518, "file": "p01.json", "key": "방송법", "n": 145}, "신문 등의 진흥에 관한 법률": {"lsi": "277349", "ef": "20251001", "hdr": "법률 제21066호, 2025. 10. 1., 타법개정", "src": "web", "at": 1793519384055, "file": "p01.json", "key": "신문 등의 진흥에 관한 법률", "n": 42}, "언론중재 및 피해구제 등에 관한 법률": {"lsi": "253581", "ef": "20230808", "hdr": "법률 제19592호, 2023. 8. 8., 타법개정", "src": "web", "at": 1793519384549, "file": "p01.json", "key": "언론중재 및 피해구제 등에 관한 법률", "n": 37}, "공공기관의 정보공개에 관한 법률": {"lsi": "251019", "ef": "20231117", "hdr": "법률 제19408호, 2023. 5. 16., 타법개정", "src": "web", "at": 1793519384845, "file": "p01.json", "key": "공공기관의 정보공개에 관한 법률", "n": 33}, "개인정보 보호법": {"lsi": "283839", "ef": "20260911", "hdr": "법률 제21445호, 2026. 3. 10., 일부개정", "src": "web", "at": 1793519385483, "file": "p01.json", "key": "개인정보 보호법", "n": 131}, "통신비밀보호법": {"lsi": "290003", "ef": "20261002", "hdr": "법률 제21989호, 2026. 9. 29., 일부개정", "src": "web", "at": 1793519386224, "file": "p01.json", "key": "통신비밀보호법", "n": 32}, "주민소환에 관한 법률": {"lsi": "228577", "ef": "20220113", "hdr": "법률 제17893호, 2021. 1. 12., 타법개정", "src": "web", "at": 1793519386828, "file": "p01.json", "key": "주민소환에 관한 법률", "n": 39}, "국가재정법": {"lsi": "283845", "ef": "20260911", "hdr": "법률 제21419호, 2026. 3. 10., 일부개정", "src": "web", "at": 1793519387937, "file": "p01.json", "key": "국가재정법", "n": 128}, "군사법원법": {"lsi": "290125", "ef": "20261002", "hdr": "법률 제22013호, 2026. 9. 29., 일부개정", "src": "web", "at": 1793519389304, "file": "p02.json", "key": "군사법원법", "n": 698}, "계엄법": {"lsi": "272873", "ef": "20250722", "hdr": "법률 제20993호, 2025. 7. 22., 일부개정", "src": "web", "at": 1793519389548, "file": "p02.json", "key": "계엄법", "n": 22}, "감염병의 예방 및 관리에 관한 법률": {"lsi": "285325", "ef": "20261008", "hdr": "법률 제21521호, 2026. 4. 7., 일부개정", "src": "web", "at": 1793519390255, "file": "p02.json", "key": "감염병의 예방 및 관리에 관한 법률", "n": 141}, "모자보건법": {"lsi": "286727", "ef": "20260910", "hdr": "법률 제21777호, 2026. 6. 9., 타법개정", "src": "web", "at": 1793519390846, "file": "p02.json", "key": "모자보건법", "n": 66}, "근로기준법": {"lsi": "285279", "ef": "20261008", "hdr": "법률 제21533호, 2026. 4. 7., 일부개정", "src": "web", "at": 1793519391742, "file": "p02.json", "key": "근로기준법", "n": 133}, "노동조합 및 노동관계조정법": {"lsi": "273667", "ef": "20260310", "hdr": "법률 제21045호, 2025. 9. 9., 일부개정", "src": "web", "at": 1793519392168, "file": "p02.json", "key": "노동조합 및 노동관계조정법", "n": 108}, "공무원의 노동조합 설립 및 운영 등에 관한 법률": {"lsi": "243037", "ef": "20231211", "hdr": "법률 제18922호, 2022. 6. 10., 일부개정", "src": "web", "at": 1793519392449, "file": "p02.json", "key": "공무원의 노동조합 설립 및 운영 등에 관한 법률", "n": 20}, "남녀고용평등과 일ㆍ가정 양립 지원에 관한 법률": {"lsi": "284457", "ef": "20260918", "hdr": "법률 제21476호, 2026. 3. 17., 일부개정", "src": "web", "at": 1793519393876, "file": "p02.json", "key": "남녀고용평등과 일ㆍ가정 양립 지원에 관한 법률", "n": 72}, "국가공무원법": {"lsi": "285489", "ef": "20261022", "hdr": "법률 제21574호, 2026. 4. 21., 일부개정", "src": "web", "at": 1793519394559, "file": "p02.json", "key": "국가공무원법", "n": 138}, "행정기본법": {"lsi": "269955", "ef": "20260319", "hdr": "법률 제20824호, 2025. 3. 18., 일부개정", "src": "web", "at": 1793519395206, "file": "p02.json", "key": "행정기본법", "n": 41}, "행정절차법": {"lsi": "239291", "ef": "20230324", "hdr": "법률 제18748호, 2022. 1. 11., 일부개정", "src": "web", "at": 1793519395889, "file": "p02.json", "key": "행정절차법", "n": 70}, "행정심판법": {"lsi": "249041", "ef": "20230321", "hdr": "법률 제19269호, 2023. 3. 21., 일부개정", "src": "web", "at": 1793519396808, "file": "p02.json", "key": "행정심판법", "n": 65}, "행정대집행법": {"lsi": "170996", "ef": "20151119", "hdr": "법률 제13295호, 2015. 5. 18., 일부개정", "src": "web", "at": 1793519397406, "file": "p02.json", "key": "행정대집행법", "n": 9}, "행정규제기본법": {"lsi": "285947", "ef": "20260512", "hdr": "법률 제21643호, 2026. 5. 12., 일부개정", "src": "web", "at": 1793519398231, "file": "p02.json", "key": "행정규제기본법", "n": 50}, "행정소송법": {"lsi": "285913", "ef": "20260512", "hdr": "법률 제21615호, 2026. 5. 12., 일부개정", "src": "web", "at": 1793519398987, "file": "p02.json", "key": "행정소송법", "n": 46}, "행정소송규칙": {"lsi": "260689", "ef": "20240301", "hdr": "대법원규칙 제3132호, 2024. 2. 22., 일부개정", "src": "web", "at": 1793519399664, "file": "p02.json", "key": "행정소송규칙", "n": 21}, "지방자치법": {"lsi": "285291", "ef": "20261015", "hdr": "법률 제21544호, 2026. 4. 14., 일부개정", "src": "web", "at": 1793519400868, "file": "p03.json", "key": "지방자치법", "n": 220}, "경찰관 직무집행법": {"lsi": "282479", "ef": "20260707", "hdr": "법률 제21304호, 2026. 1. 6., 일부개정", "src": "web", "at": 1793519401168, "file": "p03.json", "key": "경찰관 직무집행법", "n": 27}, "공익사업을 위한 토지 등의 취득 및 보상에 관한 법률": {"lsi": "289333", "ef": "20260908", "hdr": "법률 제21901호, 2026. 9. 8., 타법개정", "src": "web", "at": 1793519401897, "file": "p03.json", "key": "공익사업을 위한 토지 등의 취득 및 보상에 관한 법률", "n": 109}, "민법": {"lsi": "284415", "ef": "20260317", "hdr": "법률 제21454호, 2026. 3. 17., 일부개정", "src": "web", "at": 1793519403855, "file": "p03.json", "key": "민법", "n": 1193}, "민법 제312조의2 단서의 시행에 관한 규정": {"lsi": "20194", "ef": "19840901", "hdr": "대통령령 제11493호, 1984. 9. 1., 제정", "src": "web", "at": 1793519404224, "file": "p03.json", "key": "민법 제312조의2 단서의 시행에 관한 규정", "n": 3}, "가족관계의 등록 등에 관한 법률": {"lsi": "290741", "ef": "20261002", "hdr": "법률 제21857호, 2026. 8. 4., 타법개정", "src": "web", "at": 1793519404603, "file": "p03.json", "key": "가족관계의 등록 등에 관한 법률", "n": 139}, "가등기담보 등에 관한 법률": {"lsi": "188538", "ef": "20170328", "hdr": "법률 제14474호, 2016. 12. 27., 타법개정", "src": "web", "at": 1793519404848, "file": "p03.json", "key": "가등기담보 등에 관한 법률", "n": 18}, "동산ㆍ채권 등의 담보에 관한 법률": {"lsi": "222425", "ef": "20220421", "hdr": "법률 제17502호, 2020. 10. 20., 일부개정", "src": "web", "at": 1793519405268, "file": "p03.json", "key": "동산ㆍ채권 등의 담보에 관한 법률", "n": 64}, "보증인 보호를 위한 특별법": {"lsi": "251943", "ef": "20231221", "hdr": "법률 제19504호, 2023. 6. 20., 타법개정", "src": "web", "at": 1793519405736, "file": "p03.json", "key": "보증인 보호를 위한 특별법", "n": 11}, "신원보증법": {"lsi": "91383", "ef": "20090130", "hdr": "법률 제9363호, 2009. 1. 30., 일부개정", "src": "web", "at": 1793519406163, "file": "p03.json", "key": "신원보증법", "n": 8}, "이자제한법": {"lsi": "268667", "ef": "20250722", "hdr": "법률 제20714호, 2025. 1. 21., 타법개정", "src": "web", "at": 1793519406640, "file": "p03.json", "key": "이자제한법", "n": 8}, "이자제한법 제2조제1항의 최고이자율에 관한 규정": {"lsi": "230727", "ef": "20210707", "hdr": "대통령령 제31593호, 2021. 4. 6., 일부개정", "src": "web", "at": 1793519407146, "file": "p03.json", "key": "이자제한법 제2조제1항의 최고이자율에 관한 규정", "n": 0}, "약관의 규제에 관한 법률": {"lsi": "260021", "ef": "20240807", "hdr": "법률 제20239호, 2024. 2. 6., 타법개정", "src": "web", "at": 1793519407651, "file": "p03.json", "key": "약관의 규제에 관한 법률", "n": 43}, "국가배상법": {"lsi": "268079", "ef": "20250107", "hdr": "법률 제20635호, 2025. 1. 7., 일부개정", "src": "web", "at": 1793519407986, "file": "p03.json", "key": "국가배상법", "n": 19}, "제조물 책임법": {"lsi": "193381", "ef": "20180419", "hdr": "법률 제14764호, 2017. 4. 18., 일부개정", "src": "web", "at": 1793519408491, "file": "p03.json", "key": "제조물 책임법", "n": 9}, "자동차손해배상 보장법": {"lsi": "290659", "ef": "20261002", "hdr": "법률 제21490호, 2026. 3. 24., 타법개정", "src": "web", "at": 1793519409230, "file": "p03.json", "key": "자동차손해배상 보장법", "n": 86}, "주택임대차보호법": {"lsi": "276291", "ef": "20260102", "hdr": "법률 제21065호, 2025. 10. 1., 타법개정", "src": "web", "at": 1793519409851, "file": "p03.json", "key": "주택임대차보호법", "n": 42}, "상가건물 임대차보호법": {"lsi": "279651", "ef": "20260512", "hdr": "법률 제21083호, 2025. 11. 11., 일부개정", "src": "web", "at": 1793519410359, "file": "p03.json", "key": "상가건물 임대차보호법", "n": 33}, "부동산 실권리자명의 등기에 관한 법률": {"lsi": "215759", "ef": "20200324", "hdr": "법률 제17091호, 2020. 3. 24., 타법개정", "src": "web", "at": 1793519410818, "file": "p03.json", "key": "부동산 실권리자명의 등기에 관한 법률", "n": 17}, "부동산등기법": {"lsi": "265377", "ef": "20250131", "hdr": "법률 제20435호, 2024. 9. 20., 일부개정", "src": "web", "at": 1793519411634, "file": "p03.json", "key": "부동산등기법", "n": 121}, "부동산등기 특별조치법": {"lsi": "238263", "ef": "20220101", "hdr": "법률 제18655호, 2021. 12. 28., 타법개정", "src": "web", "at": 1793519412031, "file": "p03.json", "key": "부동산등기 특별조치법", "n": 12}, "상법": {"lsi": "273629", "ef": "20260910", "hdr": "법률 제21044호, 2025. 9. 9., 일부개정", "src": "web", "at": 1793519414137, "file": "p04.json", "key": "상법", "n": 1188}, "상법 시행령": {"lsi": "288205", "ef": "20260723", "hdr": "대통령령 제36511호, 2026. 7. 21., 일부개정", "src": "web", "at": 1793519414696, "file": "p04.json", "key": "상법 시행령", "n": 59}, "어음법": {"lsi": "103947", "ef": "20100331", "hdr": "법률 제10198호, 2010. 3. 31., 일부개정", "src": "web", "at": 1793519415283, "file": "p04.json", "key": "어음법", "n": 78}, "수표법": {"lsi": "103946", "ef": "20100331", "hdr": "법률 제10197호, 2010. 3. 31., 일부개정", "src": "web", "at": 1793519415786, "file": "p04.json", "key": "수표법", "n": 62}, "민사소송법": {"lsi": "290113", "ef": "20261002", "hdr": "법률 제21993호, 2026. 9. 29., 일부개정", "src": "web", "at": 1793519416639, "file": "p04.json", "key": "민사소송법", "n": 527}, "민사소송규칙": {"lsi": "291043", "ef": "20261012", "hdr": "대법원규칙 제3278호, 2026. 10. 12., 일부개정", "src": "web", "at": 1793519417179, "file": "p04.json", "key": "민사소송규칙", "n": 188}, "민사집행법": {"lsi": "268837", "ef": "20260201", "hdr": "법률 제20733호, 2025. 1. 31., 일부개정", "src": "web", "at": 1793519418318, "file": "p04.json", "key": "민사집행법", "n": 313}, "상고심절차에 관한 특례법": {"lsi": "97050", "ef": "20091102", "hdr": "법률 제9816호, 2009. 11. 2., 일부개정", "src": "web", "at": 1793519418715, "file": "p04.json", "key": "상고심절차에 관한 특례법", "n": 7}, "소송촉진 등에 관한 특례법": {"lsi": "286417", "ef": "20260602", "hdr": "법률 제21726호, 2026. 6. 2., 일부개정", "src": "web", "at": 1793519419273, "file": "p04.json", "key": "소송촉진 등에 관한 특례법", "n": 43}, "소액사건심판법": {"lsi": "249281", "ef": "20230328", "hdr": "법률 제19281호, 2023. 3. 28., 일부개정", "src": "web", "at": 1793519420021, "file": "p04.json", "key": "소액사건심판법", "n": 25}, "가사소송법": {"lsi": "265309", "ef": "20260101", "hdr": "법률 제20432호, 2024. 9. 20., 타법개정", "src": "web", "at": 1793519420476, "file": "p04.json", "key": "가사소송법", "n": 90}, "형법": {"lsi": "290185", "ef": "20261002", "hdr": "법률 제22007호, 2026. 9. 29., 일부개정", "src": "web", "at": 1793519421572, "file": "p05.json", "key": "형법", "n": 402}, "특정범죄 가중처벌 등에 관한 법률": {"lsi": "270397", "ef": "20250702", "hdr": "법률 제20878호, 2025. 4. 1., 타법개정", "src": "web", "at": 1793519422206, "file": "p05.json", "key": "특정범죄 가중처벌 등에 관한 법률", "n": 31}, "특정경제범죄 가중처벌 등에 관한 법률": {"lsi": "199773", "ef": "20180320", "hdr": "법률 제15256호, 2017. 12. 19., 일부개정", "src": "web", "at": 1793519422826, "file": "p05.json", "key": "특정경제범죄 가중처벌 등에 관한 법률", "n": 14}, "부정수표 단속법": {"lsi": "103869", "ef": "20100324", "hdr": "법률 제10185호, 2010. 3. 24., 일부개정", "src": "web", "at": 1793519423201, "file": "p05.json", "key": "부정수표 단속법", "n": 7}, "폭력행위 등 처벌에 관한 법률": {"lsi": "290181", "ef": "20261002", "hdr": "법률 제22005호, 2026. 9. 29., 일부개정", "src": "web", "at": 1793519423761, "file": "p05.json", "key": "폭력행위 등 처벌에 관한 법률", "n": 10}, "성폭력방지 및 피해자보호 등에 관한 법률": {"lsi": "290759", "ef": "20261002", "hdr": "법률 제21857호, 2026. 8. 4., 타법개정", "src": "web", "at": 1793519424288, "file": "p05.json", "key": "성폭력방지 및 피해자보호 등에 관한 법률", "n": 47}, "성폭력범죄의 처벌 등에 관한 특례법": {"lsi": "289993", "ef": "20261002", "hdr": "법률 제21997호, 2026. 9. 29., 일부개정", "src": "web", "at": 1793519424899, "file": "p05.json", "key": "성폭력범죄의 처벌 등에 관한 특례법", "n": 77}, "아동ㆍ청소년의 성보호에 관한 법률": {"lsi": "290215", "ef": "20261002", "hdr": "법률 제22027호, 2026. 9. 29., 일부개정", "src": "web", "at": 1793519425909, "file": "p05.json", "key": "아동ㆍ청소년의 성보호에 관한 법률", "n": 88}, "소년법": {"lsi": "288611", "ef": "20261002", "hdr": "법률 제21857호, 2026. 8. 4., 타법개정", "src": "web", "at": 1793519426421, "file": "p05.json", "key": "소년법", "n": 79}, "치료감호 등에 관한 법률": {"lsi": "290727", "ef": "20261002", "hdr": "법률 제21857호, 2026. 8. 4., 타법개정", "src": "web", "at": 1793519427137, "file": "p05.json", "key": "치료감호 등에 관한 법률", "n": 72}, "형사보상 및 명예회복에 관한 법률": {"lsi": "290625", "ef": "20261002", "hdr": "법률 제21490호, 2026. 3. 24., 타법개정", "src": "web", "at": 1793519427804, "file": "p05.json", "key": "형사보상 및 명예회복에 관한 법률", "n": 36}, "도로교통법": {"lsi": "291133", "ef": "20261013", "hdr": "법률 제22067호, 2026. 10. 13., 일부개정", "src": "web", "at": 1793519428931, "file": "p05.json", "key": "도로교통법", "n": 216}, "교통사고처리 특례법": {"lsi": "268077", "ef": "20250604", "hdr": "법률 제20634호, 2025. 1. 7., 일부개정", "src": "web", "at": 1793519429217, "file": "p05.json", "key": "교통사고처리 특례법", "n": 6}, "여신전문금융업법": {"lsi": "277267", "ef": "20251001", "hdr": "법률 제21065호, 2025. 10. 1., 타법개정", "src": "web", "at": 1793519431133, "file": "p05.json", "key": "여신전문금융업법", "n": 117}, "정보통신망 이용촉진 및 정보보호 등에 관한 법률": {"lsi": "290001", "ef": "20261002", "hdr": "법률 제21988호, 2026. 9. 29., 일부개정", "src": "web", "at": 1793519432251, "file": "p05.json", "key": "정보통신망 이용촉진 및 정보보호 등에 관한 법률", "n": 167}, "형사소송법": {"lsi": "290189", "ef": "20261002", "hdr": "법률 제22009호, 2026. 9. 29., 일부개정", "src": "web", "at": 1793519433757, "file": "p06.json", "key": "형사소송법", "n": 619}, "형사소송규칙": {"lsi": "290807", "ef": "20261002", "hdr": "대법원규칙 제3277호, 2026. 10. 2., 일부개정", "src": "web", "at": 1793519434919, "file": "p06.json", "key": "형사소송규칙", "n": 309}, "검사와 사법경찰관의 상호협력과 일반적 수사준칙에 관한 규정": {"lsi": "290263", "ef": "20261002", "hdr": "대통령령 제36704호, 2026. 9. 29., 일부개정", "src": "web", "at": 1793519435390, "file": "p06.json", "key": "검사와 사법경찰관의 상호협력과 일반적 수사준칙에 관한 규정", "n": 90}, "국민의 형사재판 참여에 관한 법률": {"lsi": "290679", "ef": "20261002", "hdr": "법률 제21490호, 2026. 3. 24., 타법개정", "src": "web", "at": 1793519435743, "file": "p06.json", "key": "국민의 형사재판 참여에 관한 법률", "n": 60}, "국민의 형사재판 참여에 관한 규칙": {"lsi": "291051", "ef": "20261012", "hdr": "대법원규칙 제3282호, 2026. 10. 12., 일부개정", "src": "web", "at": 1793519436078, "file": "p06.json", "key": "국민의 형사재판 참여에 관한 규칙", "n": 46}, "즉결심판에 관한 절차법": {"lsi": "290641", "ef": "20261002", "hdr": "법률 제21490호, 2026. 3. 24., 타법개정", "src": "web", "at": 1793519436639, "file": "p06.json", "key": "즉결심판에 관한 절차법", "n": 21}, "조약법에 관한 비엔나협약": {"lsi": "T372", "ef": "", "hdr": "다자조약, 제697호, 1980. 1. 22 · 발효 1980. 1. 27", "src": "web", "at": 1793519436830, "file": "p06.json", "key": "조약법에 관한 비엔나협약", "n": 85}, "관세 및 무역에 관한 일반협정": {"lsi": "T4055", "ef": "", "hdr": "1947. 10. 30. 채택 · 대한민국 가입 발효 1967. 4. 14.", "src": "web", "at": 1793519437304, "file": "p06.json", "key": "관세 및 무역에 관한 일반협정", "n": 39}, "국제위법행위에 대한 국가책임 초안": {"lsi": "ILC2001", "ef": "", "hdr": "국제법위원회(ILC) 채택, 2001", "src": "static", "file": "p06.json", "key": "국제위법행위에 대한 국가책임 초안", "n": 59}};
+window.LB_CATALOGS={"basic": {"editions": [{"id": "pub", "name": "공법편", "laws": ["대한민국헌법", "헌법재판소법", "법원조직법", "정부조직법", "국회법", "국가배상법", "행정기본법", "행정절차법", "행정심판법", "행정소송법", "행정대집행법", "행정규제기본법", "경찰관 직무집행법", "도로교통법"]}, {"id": "civ", "name": "민사법편", "laws": ["민법", "상법", "민사소송법", "민사집행법", "어음법", "수표법", "부동산 실권리자명의 등기에 관한 법률", "부동산등기법", "가등기담보 등에 관한 법률", "주택임대차보호법", "상가건물 임대차보호법"]}, {"id": "cri", "name": "형사법편", "laws": ["대한민국헌법", "형법", "형사소송법", "형사소송규칙", "경찰관 직무집행법", "특정경제범죄 가중처벌 등에 관한 법률", "특정범죄 가중처벌 등에 관한 법률", "폭력행위 등 처벌에 관한 법률", "교통사고처리 특례법", "성폭력범죄의 처벌 등에 관한 특례법", "아동ㆍ청소년의 성보호에 관한 법률", "도로교통법", "국민의 형사재판 참여에 관한 법률", "부정수표 단속법", "통신비밀보호법"]}, {"id": "int", "name": "국제법편", "laws": ["조약법에 관한 비엔나협약", "관세 및 무역에 관한 일반협정", "국제위법행위에 대한 국가책임 초안"]}], "short": {"국적법": "국적법", "청원법": "청원법", "대통령직 인수에 관한 법률": "대통령직인수법", "국민투표법": "국민투표법", "공직선거법": "공직선거법", "정당법": "정당법", "정치자금법": "정치자금법", "국정감사 및 조사에 관한 법률": "국감법", "국회에서의 증언ㆍ감정 등에 관한 법률": "국회증언법", "인사청문회법": "인사청문회법", "공소청법": "공소청법", "중대범죄수사청 조직 및 운영에 관한 법률": "중수청법", "변호사법": "변호사법", "출입국관리법": "출입국관리법", "집회 및 시위에 관한 법률": "집시법", "국가인권위원회법": "인권위법", "사면법": "사면법", "범죄피해자 보호법": "범죄피해자법", "감사원법": "감사원법", "방송법": "방송법", "신문 등의 진흥에 관한 법률": "신문법", "언론중재 및 피해구제 등에 관한 법률": "언론중재법", "공공기관의 정보공개에 관한 법률": "정보공개법", "개인정보 보호법": "개인정보법", "주민소환에 관한 법률": "주민소환법", "국가재정법": "국가재정법", "군사법원법": "군사법원법", "계엄법": "계엄법", "감염병의 예방 및 관리에 관한 법률": "감염병예방법", "모자보건법": "모자보건법", "근로기준법": "근로기준법", "노동조합 및 노동관계조정법": "노조법", "공무원의 노동조합 설립 및 운영 등에 관한 법률": "공무원노조법", "남녀고용평등과 일ㆍ가정 양립 지원에 관한 법률": "남녀고용평등법", "국가공무원법": "국공법", "행정소송규칙": "행소규칙", "지방자치법": "지자법", "공익사업을 위한 토지 등의 취득 및 보상에 관한 법률": "토지보상법", "민법 제312조의2 단서의 시행에 관한 규정": "민법312조의2규정", "가족관계의 등록 등에 관한 법률": "가족관계법", "동산ㆍ채권 등의 담보에 관한 법률": "동산채권담보법", "보증인 보호를 위한 특별법": "보증인보호법", "신원보증법": "신원보증법", "이자제한법": "이자제한법", "이자제한법 제2조제1항의 최고이자율에 관한 규정": "최고이자율규정", "약관의 규제에 관한 법률": "약관법", "제조물 책임법": "제조물책임법", "자동차손해배상 보장법": "자배법", "부동산등기 특별조치법": "부등특조법", "상법 시행령": "상법시행령", "민사소송규칙": "민소규칙", "상고심절차에 관한 특례법": "상고심법", "소송촉진 등에 관한 특례법": "소촉법", "소액사건심판법": "소액사건법", "가사소송법": "가소법", "성폭력방지 및 피해자보호 등에 관한 법률": "성폭력방지법", "소년법": "소년법", "치료감호 등에 관한 법률": "치료감호법", "형사보상 및 명예회복에 관한 법률": "형사보상법", "여신전문금융업법": "여신법", "정보통신망 이용촉진 및 정보보호 등에 관한 법률": "정보통신망법", "검사와 사법경찰관의 상호협력과 일반적 수사준칙에 관한 규정": "수사준칙", "국민의 형사재판 참여에 관한 규칙": "국참규칙", "즉결심판에 관한 절차법": "즉심법"}, "count": 40}, "full": {"editions": [{"id": "pub", "name": "공법편", "groups": [{"name": "헌법 분야", "laws": ["대한민국헌법", "국적법", "청원법", "헌법재판소법", "대통령직 인수에 관한 법률", "국민투표법", "공직선거법", "정당법", "정치자금법", "국회법", "국정감사 및 조사에 관한 법률", "국회에서의 증언ㆍ감정 등에 관한 법률", "인사청문회법", "정부조직법", "법원조직법", "공소청법", "중대범죄수사청 조직 및 운영에 관한 법률", "변호사법", "출입국관리법", "집회 및 시위에 관한 법률", "국가인권위원회법", "사면법", "범죄피해자 보호법", "감사원법", "방송법", "신문 등의 진흥에 관한 법률", "언론중재 및 피해구제 등에 관한 법률", "공공기관의 정보공개에 관한 법률", "개인정보 보호법", "통신비밀보호법", "주민소환에 관한 법률", "국가재정법", "군사법원법", "계엄법", "감염병의 예방 및 관리에 관한 법률", "모자보건법", "근로기준법", "노동조합 및 노동관계조정법", "공무원의 노동조합 설립 및 운영 등에 관한 법률", "남녀고용평등과 일ㆍ가정 양립 지원에 관한 법률"]}, {"name": "행정법 분야", "laws": ["국가공무원법", "행정기본법", "행정절차법", "행정심판법", "행정대집행법", "행정규제기본법", "행정소송법", "행정소송규칙", "지방자치법", "경찰관 직무집행법", "공익사업을 위한 토지 등의 취득 및 보상에 관한 법률"]}]}, {"id": "civ", "name": "민사법편", "groups": [{"name": "민법 분야", "laws": ["민법", "민법 제312조의2 단서의 시행에 관한 규정", "가족관계의 등록 등에 관한 법률", "가등기담보 등에 관한 법률", "동산ㆍ채권 등의 담보에 관한 법률", "보증인 보호를 위한 특별법", "신원보증법", "이자제한법", "이자제한법 제2조제1항의 최고이자율에 관한 규정", "약관의 규제에 관한 법률", "국가배상법", "제조물 책임법", "자동차손해배상 보장법", "주택임대차보호법", "상가건물 임대차보호법", "부동산 실권리자명의 등기에 관한 법률", "부동산등기법", "부동산등기 특별조치법"]}, {"name": "상법 분야", "laws": ["상법", "상법 시행령", "어음법", "수표법"]}, {"name": "민사소송법 분야", "laws": ["민사소송법", "민사소송규칙", "민사집행법", "상고심절차에 관한 특례법", "소송촉진 등에 관한 특례법", "소액사건심판법", "가사소송법"]}]}, {"id": "cri", "name": "형사법편", "groups": [{"name": "형법 분야", "laws": ["형법", "특정범죄 가중처벌 등에 관한 법률", "특정경제범죄 가중처벌 등에 관한 법률", "부정수표 단속법", "폭력행위 등 처벌에 관한 법률", "성폭력방지 및 피해자보호 등에 관한 법률", "성폭력범죄의 처벌 등에 관한 특례법", "아동ㆍ청소년의 성보호에 관한 법률", "소년법", "치료감호 등에 관한 법률", "형사보상 및 명예회복에 관한 법률", "도로교통법", "교통사고처리 특례법", "여신전문금융업법", "정보통신망 이용촉진 및 정보보호 등에 관한 법률"]}, {"name": "형사소송법 분야", "laws": ["형사소송법", "형사소송규칙", "검사와 사법경찰관의 상호협력과 일반적 수사준칙에 관한 규정", "국민의 형사재판 참여에 관한 법률", "국민의 형사재판 참여에 관한 규칙", "즉결심판에 관한 절차법"]}]}, {"id": "int", "name": "국제법편", "groups": [{"name": "국제법", "laws": ["조약법에 관한 비엔나협약", "관세 및 무역에 관한 일반협정", "국제위법행위에 대한 국가책임 초안"]}]}], "short": {"국적법": "국적법", "청원법": "청원법", "대통령직 인수에 관한 법률": "대통령직인수법", "국민투표법": "국민투표법", "공직선거법": "공직선거법", "정당법": "정당법", "정치자금법": "정치자금법", "국정감사 및 조사에 관한 법률": "국감법", "국회에서의 증언ㆍ감정 등에 관한 법률": "국회증언법", "인사청문회법": "인사청문회법", "공소청법": "공소청법", "중대범죄수사청 조직 및 운영에 관한 법률": "중수청법", "변호사법": "변호사법", "출입국관리법": "출입국관리법", "집회 및 시위에 관한 법률": "집시법", "국가인권위원회법": "인권위법", "사면법": "사면법", "범죄피해자 보호법": "범죄피해자법", "감사원법": "감사원법", "방송법": "방송법", "신문 등의 진흥에 관한 법률": "신문법", "언론중재 및 피해구제 등에 관한 법률": "언론중재법", "공공기관의 정보공개에 관한 법률": "정보공개법", "개인정보 보호법": "개인정보법", "주민소환에 관한 법률": "주민소환법", "국가재정법": "국가재정법", "군사법원법": "군사법원법", "계엄법": "계엄법", "감염병의 예방 및 관리에 관한 법률": "감염병예방법", "모자보건법": "모자보건법", "근로기준법": "근로기준법", "노동조합 및 노동관계조정법": "노조법", "공무원의 노동조합 설립 및 운영 등에 관한 법률": "공무원노조법", "남녀고용평등과 일ㆍ가정 양립 지원에 관한 법률": "남녀고용평등법", "국가공무원법": "국공법", "행정소송규칙": "행소규칙", "지방자치법": "지자법", "공익사업을 위한 토지 등의 취득 및 보상에 관한 법률": "토지보상법", "민법 제312조의2 단서의 시행에 관한 규정": "민법312조의2규정", "가족관계의 등록 등에 관한 법률": "가족관계법", "동산ㆍ채권 등의 담보에 관한 법률": "동산채권담보법", "보증인 보호를 위한 특별법": "보증인보호법", "신원보증법": "신원보증법", "이자제한법": "이자제한법", "이자제한법 제2조제1항의 최고이자율에 관한 규정": "최고이자율규정", "약관의 규제에 관한 법률": "약관법", "제조물 책임법": "제조물책임법", "자동차손해배상 보장법": "자배법", "부동산등기 특별조치법": "부등특조법", "상법 시행령": "상법시행령", "민사소송규칙": "민소규칙", "상고심절차에 관한 특례법": "상고심법", "소송촉진 등에 관한 특례법": "소촉법", "소액사건심판법": "소액사건법", "가사소송법": "가소법", "성폭력방지 및 피해자보호 등에 관한 법률": "성폭력방지법", "소년법": "소년법", "치료감호 등에 관한 법률": "치료감호법", "형사보상 및 명예회복에 관한 법률": "형사보상법", "여신전문금융업법": "여신법", "정보통신망 이용촉진 및 정보보호 등에 관한 법률": "정보통신망법", "검사와 사법경찰관의 상호협력과 일반적 수사준칙에 관한 규정": "수사준칙", "국민의 형사재판 참여에 관한 규칙": "국참규칙", "즉결심판에 관한 절차법": "즉심법"}, "count": 104}};
+(function(){if(!window.FontFace)return;[['LBSerif','serif.woff2','400'],['LBSans','sansb.woff2','700']].forEach(function(f){fetch(f[1]).then(function(r){return r.arrayBuffer();}).then(function(b){var ff=new FontFace(f[0],b,{weight:f[2]});return ff.load();}).then(function(ff){document.fonts.add(ff);clearTimeout(window.__lbF);window.__lbF=setTimeout(function(){window.dispatchEvent(new Event('lbfontload'));window.dispatchEvent(new Event('resize'));},120);}).catch(function(){});});})();
+/* 변시 법전 — 본체 */
+(function () {
+  'use strict';
+
+  // ───────── 수록 법령 ─────────
+  var EDITIONS = [
+    { id: 'pub', name: '공법편', laws: ['대한민국헌법', '헌법재판소법', '법원조직법', '정부조직법', '국회법', '국가배상법', '행정기본법', '행정절차법', '행정심판법', '행정소송법', '행정대집행법', '행정규제기본법', '경찰관 직무집행법', '도로교통법'] },
+    { id: 'civ', name: '민사법편', laws: ['민법', '상법', '민사소송법', '민사집행법', '어음법', '수표법', '부동산 실권리자명의 등기에 관한 법률', '부동산등기법', '가등기담보 등에 관한 법률', '주택임대차보호법', '상가건물 임대차보호법'] },
+    { id: 'cri', name: '형사법편', laws: ['대한민국헌법', '형법', '형사소송법', '형사소송규칙', '경찰관 직무집행법', '특정경제범죄 가중처벌 등에 관한 법률', '특정범죄 가중처벌 등에 관한 법률', '폭력행위 등 처벌에 관한 법률', '교통사고처리 특례법', '성폭력범죄의 처벌 등에 관한 특례법', '아동ㆍ청소년의 성보호에 관한 법률', '도로교통법', '국민의 형사재판 참여에 관한 법률', '부정수표 단속법', '통신비밀보호법'] },
+    { id: 'int', name: '국제법편', laws: ['조약법에 관한 비엔나협약', '관세 및 무역에 관한 일반협정', '국제위법행위에 대한 국가책임 초안'] }
+  ];
+  var TREATY = {
+    '조약법에 관한 비엔나협약': { seq: '372', pre: /^이 협약의 당사국은/ },
+    '관세 및 무역에 관한 일반협정': { seq: '4055', hdr: '1947. 10. 30. 채택 · 대한민국 가입 발효 1967. 4. 14.', start: /^관세와 무역에 관한 일반협정$/, titles: { '27': '양허의 정지 또는 철회', '33': '가입', '34': '부속서' } }
+  };
+  var STATIC = { '국제위법행위에 대한 국가책임 초안': 1 };
+  var SHORT = {
+    '대한민국헌법': '헌법', '헌법재판소법': '헌재법', '법원조직법': '법조법', '정부조직법': '정조법', '국회법': '국회법', '국가배상법': '국배법',
+    '행정기본법': '행정기본법', '행정절차법': '행절법', '행정심판법': '행심법', '행정소송법': '행소법', '행정대집행법': '대집행법', '행정규제기본법': '행규법',
+    '경찰관 직무집행법': '경직법', '도로교통법': '도교법', '민법': '민법', '상법': '상법', '민사소송법': '민소법', '민사집행법': '민집법', '어음법': '어음법',
+    '수표법': '수표법', '부동산 실권리자명의 등기에 관한 법률': '부동산실명법', '부동산등기법': '부등법', '가등기담보 등에 관한 법률': '가담법',
+    '주택임대차보호법': '주임법', '상가건물 임대차보호법': '상임법', '형법': '형법', '형사소송법': '형소법', '형사소송규칙': '형소규칙',
+    '특정경제범죄 가중처벌 등에 관한 법률': '특경법', '특정범죄 가중처벌 등에 관한 법률': '특가법', '폭력행위 등 처벌에 관한 법률': '폭처법',
+    '교통사고처리 특례법': '교특법', '성폭력범죄의 처벌 등에 관한 특례법': '성폭법', '아동ㆍ청소년의 성보호에 관한 법률': '청소년성보호법',
+    '국민의 형사재판 참여에 관한 법률': '국참법', '부정수표 단속법': '부수법', '통신비밀보호법': '통비법',
+    '조약법에 관한 비엔나협약': '조약법협약', '관세 및 무역에 관한 일반협정': 'GATT', '국제위법행위에 대한 국가책임 초안': '국가책임초안'
+  };
+  // 다른 수록 범위의 앱은 catalog.js에서 window.LB_CATALOG로 덮어쓴다
+  var WEB = !!window.LB_WEB;   // 웹판: 법제처 직접 접속 없이 넣어 둔 원문만 사용
+  var CAT = window.LB_CATALOG;
+  if (window.LB_CATALOGS) {
+    var sc0 = 'full';
+    try { sc0 = (JSON.parse(localStorage.getItem('lb.settings') || '{}').scope) || 'full'; } catch (e) { }
+    CAT = window.LB_CATALOGS[sc0] || window.LB_CATALOGS.full;
+  }
+  if (CAT) {
+    EDITIONS = CAT.editions.map(function (e) {
+      return { id: e.id, name: e.name, groups: e.groups, laws: e.groups ? [].concat.apply([], e.groups.map(function (g) { return g.laws; })) : e.laws };
+    });
+    Object.keys(CAT.short || {}).forEach(function (k) { SHORT[k] = CAT.short[k]; });
+  }
+  var EXAM_DATE = '20270112';     // 제16회 변호사시험 시행일(2027. 1. 12.~16.)
+  var ALL = [];
+  EDITIONS.forEach(function (e) { e.laws.forEach(function (n) { if (ALL.indexOf(n) < 0) ALL.push(n); }); });
+  var BASE = window.LB_BASE != null ? window.LB_BASE : 'https://www.law.go.kr';
+  var SEEDIDX = window.LB_SEED_INDEX || {};
+
+  // ───────── 설정·상태 ─────────
+  function lsGet(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
+  var S = lsGet('lb.settings', null) || {};
+  function dflt(k, v) { if (S[k] === undefined) S[k] = v; }
+  dflt('fs', 20); dflt('lh', 1.45); dflt('rev', '2y'); dflt('revDate', '20200402'); dflt('ntabs', 4); dflt('theme', 'auto');
+  dflt('links', true); dflt('base', 'exam'); dflt('baseDate', EXAM_DATE); dflt('toc', true); dflt('cols', 'land'); dflt('scrub', true);
+  var T = lsGet('lb.tabs', null);
+  if (!T || !T.list) T = { cur: 0, list: [{ law: '민법', no: '1', ed: 'civ' }, { law: '민사소송법', no: '1', ed: 'civ' }, { law: '형법', no: '1', ed: 'cri' }, { law: '대한민국헌법', no: '1', ed: 'pub' }] };
+  T.list = T.list.filter(function (t) { return ALL.indexOf(t.law) >= 0; });
+  while (T.list.length < 8) T.list.push({ law: '민법', no: '1', ed: 'civ' });
+  if (T.cur >= S.ntabs) T.cur = 0;
+  function saveS() { lsSet('lb.settings', S); }
+  function saveT() { lsSet('lb.tabs', T); }
+
+  function applySettings() {
+    var r = document.documentElement;
+    r.style.setProperty('--fs', S.fs + 'px');
+    r.style.setProperty('--lh', S.lh);
+    if (S.theme === 'auto') { if (!WEB) r.removeAttribute('data-theme'); else if (r.dataset.lbTheme) { r.removeAttribute('data-theme'); delete r.dataset.lbTheme; } }
+    else { r.setAttribute('data-theme', S.theme); if (WEB) r.dataset.lbTheme = '1'; }
+    r.style.setProperty('--scrubH', S.scrub ? '46px' : '0px');
+    var sc = document.getElementById('scrub'); if (sc) sc.hidden = !S.scrub;
+  }
+  function ymd(d) { return '' + d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2); }
+  function baseDate() { return S.base === 'today' ? ymd(new Date()) : S.base === 'date' ? S.baseDate : EXAM_DATE; }
+  function revCut() {
+    if (S.rev === 'off') return '99999999';
+    if (S.rev === 'date') return S.revDate;
+    var y = { '1y': 1, '2y': 2, '3y': 3, '5y': 5 }[S.rev] || 2;
+    var d = new Date(); d.setFullYear(d.getFullYear() - y); return ymd(d);
+  }
+  function colsOn() {
+    if (S.cols === 'on') return true;
+    if (S.cols === 'land') return window.innerWidth > window.innerHeight && window.innerWidth >= 640 && (!WEB || window.innerHeight >= 560);
+    return false;
+  }
+
+  // ───────── 저장소 ─────────
+  var dbp = null;
+  function db() {
+    if (dbp) return dbp;
+    dbp = new Promise(function (res, rej) {
+      var q = indexedDB.open(window.LB_DB || 'lawbook', 1);
+      q.onupgradeneeded = function () { q.result.createObjectStore('laws', { keyPath: 'name' }); };
+      q.onsuccess = function () { res(q.result); };
+      q.onerror = function () { rej(q.error); };
+    });
+    return dbp;
+  }
+  function dbGet(name) {
+    return db().then(function (d) {
+      return new Promise(function (res) {
+        var r = d.transaction('laws').objectStore('laws').get(name);
+        r.onsuccess = function () { res(r.result || null); }; r.onerror = function () { res(null); };
+      });
+    }, function () { return null; });
+  }
+  function dbPut(obj) {
+    return db().then(function (d) {
+      return new Promise(function (res, rej) {
+        var tx = d.transaction('laws', 'readwrite'); tx.objectStore('laws').put(obj);
+        tx.oncomplete = function () { res(); }; tx.onerror = function () { rej(tx.error); };
+      });
+    });
+  }
+  var META = lsGet('lb.meta', {});      // 내려받은 법령: {lsi, ef, hdr, at, n, changed, changedAt}
+  function saveMeta() { lsSet('lb.meta', META); }
+  function metaOf(n) { return META[n] || SEEDIDX[n] || null; }
+  var cache = {}, seedWait = {};
+  window.LB_SEED = function (n, items) { cache['seed:' + n] = items; if (seedWait[n]) { seedWait[n](items); delete seedWait[n]; } };
+  var packs = {};
+  function loadSeed(n) {
+    var m = SEEDIDX[n];
+    if (!m) return Promise.resolve(null);
+    if (cache['seed:' + n]) return Promise.resolve(cache['seed:' + n]);
+    if (WEB) {   // 웹판: 여러 법령을 묶은 파일(data/pNN.json)에서 꺼냄
+      var f = m.file;
+      packs[f] = packs[f] || fetch('' + f).then(function (r) { if (!r.ok) throw 0; return r.json(); }).catch(function (e) { delete packs[f]; throw e; });
+      return packs[f].then(function (j) { var it = m.key ? j[m.key] : j; cache['seed:' + n] = it; return it; }, function () { return null; });
+    }
+    return new Promise(function (res) {
+      seedWait[n] = res;
+      var s = document.createElement('script'); s.src = 'data/' + m.file;
+      s.onerror = function () { res(null); };
+      document.body.appendChild(s);
+    });
+  }
+  function getItems(n) {
+    if (cache[n]) return Promise.resolve(cache[n]);
+    var p = !WEB && META[n] ? dbGet(n).then(function (o) { return o ? o.items : null; }) : Promise.resolve(null);
+    return p.then(function (it) {
+      if (it) { cache[n] = it; return it; }
+      return loadSeed(n);
+    });
+  }
+
+  // ───────── 내려받기(법제처) ─────────
+  function xhr(url, timeout) {
+    return new Promise(function (res, rej) {
+      var x = new XMLHttpRequest();
+      x.open('GET', url, true);
+      x.timeout = timeout || 90000;
+      x.onload = function () { if (x.status >= 200 && x.status < 300) res(x.responseText); else rej(new Error('HTTP ' + x.status)); };
+      x.onerror = function () { rej(new Error('연결 실패')); };
+      x.ontimeout = function () { rej(new Error('시간 초과')); };
+      x.send();
+    });
+  }
+  function resolveLaw(name) {
+    return xhr(BASE + '/' + encodeURIComponent('법령') + '/' + encodeURIComponent(name.replace(/\s/g, '')), 30000).then(function (h) {
+      var m = h.match(/lsiSeq=(\d+)[^"']*?efYd=(\d{8})/);
+      if (!m) throw new Error('법령 주소를 찾지 못함');
+      return { lsi: m[1], ef: m[2] };
+    });
+  }
+  function artKey(a) { return (a.p || []).map(function (x) { return x[1]; }).join('|') + '#' + JSON.stringify(a.fut || ''); }
+  function store(name, items, info, prevMeta) {
+    return (prevMeta ? dbGet(name) : Promise.resolve(null)).then(function (prev) {
+      var changed = [];
+      if (prev && prevMeta && prevMeta.lsi !== info.lsi) {
+        var pm = {};
+        prev.items.forEach(function (a) { if (a.t === 'a') pm[a.no] = artKey(a); });
+        items.forEach(function (a) { if (a.t === 'a' && pm[a.no] !== artKey(a)) changed.push(a.no); });
+      }
+      return dbPut({ name: name, items: items }).then(function () {
+        cache[name] = items;
+        META[name] = { lsi: info.lsi, ef: info.ef || '', hdr: info.hdr || '', at: Date.now(), src: 'web',
+          n: items.filter(function (x) { return x.t === 'a'; }).length,
+          changed: changed.length ? changed : (prevMeta && prevMeta.changed) || [],
+          changedAt: changed.length ? Date.now() : (prevMeta && prevMeta.changedAt) || 0 };
+        saveMeta();
+        return { name: name, updated: !!prev, changed: changed };
+      });
+    });
+  }
+  function downloadOne(name, force) {
+    var old = META[name];
+    if (STATIC[name]) return Promise.resolve({ name: name, same: true });
+    if (TREATY[name]) {
+      if (old && !force) return Promise.resolve({ name: name, same: true });
+      var tc = TREATY[name];
+      return xhr(BASE + '/LSW/trtyInfoR.do?trtySeq=' + tc.seq + '&vSct=*').then(function (h) {
+        var items = window.LawParse.parseTreatyHtml(h, tc);
+        var hdr = tc.hdr || '';
+        for (var hi = 0; hi < Math.min(6, items.length); hi++) {
+          if (items[hi].t === 'n' && /발효일/.test(items[hi].text)) {
+            var hm = items[hi].text.match(/발효일\s*([\d.\s]+)\]\s*\[\s*([^\]]+)\]/);
+            if (!hdr) hdr = hm ? hm[2].trim() + ' · 발효 ' + hm[1].trim() : items[hi].text;
+            items.splice(0, hi + 1); break;
+          }
+        }
+        if (tc.pre) { for (var pi = 0; pi < items.length && items[pi].t === 'n'; pi++) if (tc.pre.test(items[pi].text)) { items.splice(0, pi); break; } }
+        if (items.filter(function (x) { return x.t === 'a'; }).length < 3) throw new Error('본문 해석 실패');
+        return store(name, items, { lsi: 'T' + tc.seq + ':' + h.length, hdr: hdr }, old);
+      });
+    }
+    return resolveLaw(name).then(function (v) {
+      if (!force && old && old.lsi === v.lsi) return { name: name, same: true };
+      var url = BASE + '/LSW/lsInfoR.do?lsiSeq=' + v.lsi + '&efYd=' + v.ef + '&efYn=Y&chrClsCd=010202&nwJoYnInfo=Y&ancYnChk=0&netPrivateYn=N';
+      return xhr(url).then(function (h) {
+        var items = window.LawParse.parseLawHtml(h);
+        if (!items.length) throw new Error('본문 해석 실패');
+        return store(name, items, { lsi: v.lsi, ef: v.ef, hdr: window.LawParse.parseLawHeader(h) }, old);
+      });
+    });
+  }
+  var busy = false;
+  function updateAll(force, onProg) {
+    if (busy) return Promise.reject(new Error('이미 받는 중입니다'));
+    busy = true;
+    var res = { ok: [], same: [], fail: [] }, i = 0;
+    function next() {
+      if (i >= ALL.length) { busy = false; lsSet('lb.lastCheck', Date.now()); return Promise.resolve(res); }
+      var n = ALL[i++];
+      if (onProg) onProg(i - 1, ALL.length, n);
+      return downloadOne(n, force).then(function (r) { if (r.same) res.same.push(n); else res.ok.push(r); },
+        function (e) { res.fail.push({ name: n, err: e.message }); }).then(next);
+    }
+    return next();
+  }
+
+  // ───────── 표기 ─────────
+  function $(s, el) { return (el || document).querySelector(s); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function dot(d) { return d ? d.slice(0, 4) + '·' + (+d.slice(4, 6)) + '·' + (+d.slice(6, 8)) : ''; }
+  function kdate(d) { return d ? d.slice(0, 4) + '. ' + (+d.slice(4, 6)) + '. ' + (+d.slice(6, 8)) + '.' : ''; }
+  function noLabel(no) { var p = String(no).split('_')[0].split('-'); return '제' + p[0] + '조' + (p[1] ? '의' + p[1] : ''); }
+  function short(no) { var p = String(no).split('_')[0].split('-'); return p[0] + (p[1] ? '의' + p[1] : ''); }
+  function lawLabel(n) { return SHORT[n] || n; }
+  function edOf(n, pref) {
+    for (var i = 0; i < EDITIONS.length; i++) if (EDITIONS[i].id === pref && EDITIONS[i].laws.indexOf(n) >= 0) return EDITIONS[i];
+    for (var j = 0; j < EDITIONS.length; j++) if (EDITIONS[j].laws.indexOf(n) >= 0) return EDITIONS[j];
+    return EDITIONS[0];
+  }
+  var toastT;
+  function toast(msg, ms) { var t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(function () { t.hidden = true; }, ms || 2400); }
+  var DT = /(\d{4})\s*\.\s*(\d{1,2})\s*\.\s*(\d{1,2})\.?/g;
+  var TAGRE = /&lt;((?:개정|신설|전문개정|본조신설|타법개정|조번개정|제목개정)?\s*[^&]*?\d{4}\s*\.\s*\d{1,2}\s*\.\s*\d{1,2}[^&]*?)&gt;/g;
+  var XREF = /(「[^」]{1,60}」\s*)?(제(\d+)조(?:의(\d+))?)/g;
+  function fmt(t, links) {
+    var h = esc(t).replace(TAGRE, function (all, inner) {
+      return '<span class="tg">&lt;' + inner.replace(DT, function (m, y, mo, d) { return y + '·' + (+mo) + '·' + (+d); }).replace(/\s*,\s*/g, ', ') + '&gt;</span>';
+    });
+    if (links && S.links) {
+      h = h.replace(XREF, function (all, other, lab, n, s) {
+        if (other) return all;
+        return '<a class="xref" data-no="' + n + (s ? '-' + s : '') + '">' + lab + '</a>';
+      });
+    }
+    return h;
+  }
+  function noteFmt(t) {
+    return '<span class="tg">' + esc(t).replace(DT, function (m, y, mo, d) { return y + '·' + (+mo) + '·' + (+d); }) + '</span>';
+  }
+  var PCLS = { 0: 'h', 1: 'ho', 2: 'mok', 3: 'mok2', 9: 'nt' };
+  function parasHtml(label, title, ps, extra, links) {
+    var out = [], head = '<b class="ah">' + label + (title ? '(' + esc(title) + ')' : '') + '</b>';
+    if (!ps.length || ps[0][0] !== 0) { out.push('<p class="a">' + head + (extra || '') + '</p>'); head = null; }
+    ps.forEach(function (x, k) {
+      if (k === 0 && head) { out.push('<p class="a">' + head + ' ' + fmt(x[1], links) + (extra || '') + '</p>'); return; }
+      out.push('<p class="' + PCLS[x[0]] + '">' + (x[0] === 9 ? noteFmt(x[1]) : fmt(x[1], links)) + '</p>');
+    });
+    return out.join('');
+  }
+  function splitFut(a, cut) {
+    var ap = null, pend = [];
+    (a.fut || []).forEach(function (f) { if (f.d <= cut) { if (!ap || f.d > ap.d) ap = f; } else pend.push(f); });
+    pend.sort(function (x, y) { return x.d < y.d ? -1 : 1; });
+    return { ap: ap, pend: pend };
+  }
+  function isFresh(m) { return m && m.changedAt && Date.now() - m.changedAt < 60 * 864e5; }
+
+  // 편·장·절·관·항 제목: 수준, 번호/이름/연혁 표기 분리
+  function headLv(t, lv) {
+    var m = t.match(/^제\s*\d+\s*([편장절관항])/);
+    return m ? '편장절관항'.indexOf(m[1]) : (lv == null ? 3 : lv);
+  }
+  function splitHead(t) {
+    var tag = '', name = t;
+    name = name.replace(/\s*(<[^<>]*>|\[[^\[\]]*\])\s*/g, function (m, g) { tag += (tag ? ' ' : '') + g; return ' '; }).replace(/\s+/g, ' ').trim();
+    var m = name.match(/^(제\s*\d+\s*[편장절관항부](?:의\s*\d+)?)\s*(.*)$/);
+    return m ? { num: m[1].replace(/\s+/g, ''), name: m[2], tag: tag } : { num: '', name: name, tag: tag };
+  }
+  // 조문 범위 "674의2~674의9" → "674의2~의9"
+  function rangeStr(a, b) {
+    var x = short(a), y = short(b);
+    if (x === y) return x;
+    var bx = x.split('의')[0], by = y.split('의')[0];
+    if (bx === by && y.indexOf('의') > 0) return x + '~의' + y.split('의')[1];
+    return x + '~' + y;
+  }
+  function renderLaw(name, items, ed) {
+    var m = metaOf(name) || {}, cut = baseDate(), rc = revCut(), links = !TREATY[name] && !STATIC[name];
+    var newSet = {};
+    if (META[name] && isFresh(META[name])) (META[name].changed || []).forEach(function (n) { newSet[n] = 1; });
+    var out = ['<section class="law">', '<h1 class="ttl">●' + esc(name) + '</h1>'];
+    if (m.hdr) out.push('<div class="en">〔' + esc(m.hdr).replace(DT, function (x, y, mo, d) { return y + '·' + (+mo) + '·' + (+d); }) + '〕</div>');
+    var src = [];
+    if (m.ef) src.push('시행 ' + kdate(m.ef));
+    if (META[name]) src.push('법제처 원문 ' + new Date(META[name].at).toLocaleDateString('ko-KR') + ' 받음');
+    else if (m.src === 'static') src.push('출처: 사용자 제공 자료');
+    else if (m.src === 'web' && m.at) src.push('법제처 원문 ' + new Date(m.at).toLocaleDateString('ko-KR') + ' 기준');
+    if (!STATIC[name] && !TREATY[name]) src.push('본문 기준일 ' + kdate(cut));
+    out.push('<div class="src">' + src.join(' · ') + '</div>');
+    if (!META[name] && m.src === 'seed') out.push('<div class="src warn">조판 키트 원문(2026. 9. 19.)을 임시로 보여 주는 중입니다. 설정 → 최신화를 누르면 법제처 현행 원문(시행예정 조문 음영 포함)으로 바뀝니다.</div>');
+    // 법령 앞 목차
+    var heads = [];
+    items.forEach(function (it) { if (it.t === 'h') it.lv = headLv(it.text, it.lv); });
+    items.forEach(function (it, i) {
+      if (it.t === 'h') heads.push({ i: i, it: it, arts: [] });
+      else if (it.t === 'a' && heads.length) heads[heads.length - 1].arts.push(it.no);
+    });
+    if (S.toc && heads.length >= 3) {
+      out.push('<div class="toc">');
+      var base = Math.min.apply(null, heads.map(function (h) { return h.it.lv; }));
+      heads.forEach(function (h, k) {
+        var a = h.arts.slice();
+        for (var j = k + 1; j < heads.length && heads[j].it.lv > h.it.lv; j++) a = a.concat(heads[j].arts);
+        var sh = splitHead(h.it.text);
+        var nm = sh.num ? '<b>' + esc(sh.num) + '</b> ' + esc(sh.name) : '<b>' + esc(sh.name) + '</b>';
+        var rg = a.length ? rangeStr(a[0], a[a.length - 1]) : '';
+        out.push('<button class="t' + (h.it.lv - base + 1) + '" data-no="' + (a[0] || '') + '"><span class="nm">' + nm + '</span><span class="dots"></span><span class="rg">' + rg + '</span></button>');
+      });
+      out.push('</div>');
+    }
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      if (it.t === 'h') {
+        var hh = splitHead(it.text);
+        out.push('<div class="hd l' + it.lv + '" id="h' + i + '">' + (hh.num ? '<b>' + esc(hh.num) + '</b>&ensp;' + esc(hh.name) : '<b>' + esc(hh.name) + '</b>') +
+          (hh.tag ? ' <span class="tg">' + esc(hh.tag).replace(DT, function (m, y, mo, d) { return y + '·' + (+mo) + '·' + (+d); }) + '</span>' : '') + '</div>');
+        continue;
+      }
+      if (it.t === 'n') { out.push('<div class="note' + (it.text.length <= 4 ? ' cap' : '') + '">' + fmt(it.text, false) + '</div>'); continue; }
+      var sp = splitFut(it, cut);
+      var mainP = sp.ap ? sp.ap.p : it.p, mainT = sp.ap ? (sp.ap.title || it.title) : it.title;
+      var revD = sp.ap ? sp.ap.d : it.last;
+      var badge = '';
+      if (newSet[it.no]) badge = '<span class="badge new">새로 바뀜</span>';
+      else if (revD && revD >= rc) badge = '<span class="badge">' + (sp.ap ? '시행 ' : it.del ? '삭제 ' : '개정 ') + dot(revD) + '</span>';
+      var html = '';
+      if (!(it.futOnly && !sp.ap)) html += parasHtml(it.label, mainT, mainP, badge, links);
+      sp.pend.forEach(function (f) {
+        html += '<div class="sh">' + parasHtml(it.label, f.title || mainT, f.p, ' <span class="tg">〔개정규정〕</span>', links) +
+          '<span class="ef">〔시행일 ' + dot(f.d) + (f.scope && f.scope !== it.label ? ' — ' + esc(f.scope) : '') + '〕</span></div>';
+      });
+      out.push('<div class="art' + (it.del && !sp.ap ? ' del' : '') + '" id="a' + it.no + '" data-no="' + it.no + '">' + html + '</div>');
+    }
+    out.push('</section>');
+    return out.join('');
+  }
+
+  // ───────── 화면 ─────────
+  var panes = {};
+  function verOf(n) { var m = metaOf(n) || {}; return [m.lsi, m.at, baseDate(), revCut(), S.links, S.toc, colsOn(), (m.changed || []).length].join(':'); }
+  function paneFor(ti) {
+    var tab = T.list[ti], p = panes[ti];
+    if (p && p.law === tab.law && p.ver === verOf(tab.law)) return Promise.resolve(p);
+    return getItems(tab.law).then(function (items) {
+      if (p) p.el.remove();
+      var el = document.createElement('div');
+      var pg = WEB && colsOn();
+      el.className = 'pane' + (pg ? ' paged' : colsOn() ? ' cols' : ''); el.hidden = true;
+      if (!items) {
+        el.innerHTML = '<section class="law"><h1 class="ttl">●' + esc(tab.law) + '</h1><p class="small" style="margin:1em 0">아직 본문이 없습니다.</p>' +
+          (STATIC[tab.law] ? '' : '<button class="btn" data-act="dl">법제처에서 받기</button>') + '</section>';
+      } else el.innerHTML = renderLaw(tab.law, items, tab.ed);
+      $('#stage').appendChild(el);
+      el.addEventListener('scroll', onScroll, { passive: true });
+      el.addEventListener('click', onPaneClick);
+      p = panes[ti] = { law: tab.law, el: el, ver: verOf(tab.law), items: items, cols: colsOn() && !pg, paged: pg && !!items };
+      return p;
+    });
+  }
+  function showTab(ti, jumpNo, flash) {
+    T.cur = ti; saveT();
+    return paneFor(ti).then(function (p) {
+      Object.keys(panes).forEach(function (k) { panes[k].el.hidden = (+k !== ti); });
+      p.el.hidden = false;
+      if (p.paged && !p.paginated) paginate(p);
+      renderTabs(); renderTop();
+      if (jumpNo || !p.positioned) { scrollToNo(p, jumpNo || T.list[ti].no, flash); p.positioned = true; }
+      updateRun(); buildTicks(); syncScrub();
+    });
+  }
+  var jumpFromUser = false;
+  function cssEsc(s) { return String(s).replace(/[^\w-]/g, '\\$&'); }
+  function scrollToNo(p, no, flash) {
+    var el = p.el.querySelector('#a' + cssEsc(no));
+    if (!el) {
+      var n = parseInt(no, 10), best = null;
+      p.el.querySelectorAll('.art').forEach(function (a) { if (parseInt(a.dataset.no, 10) <= n) best = a; });
+      el = best;
+      if (jumpFromUser) toast(noLabel(no) + '는 없습니다');
+    }
+    if (el) {
+      if (p.cols) {
+        var pr = p.el.getBoundingClientRect(), r = el.getBoundingClientRect(), g = colGeom(p.el);
+        var x = p.el.scrollLeft + r.left - pr.left - g.pl;
+        p.el.scrollLeft = Math.max(0, Math.floor((x + 2) / g.step) * g.step);
+      } else if (p.paged) { var pgEl = el.closest('.pg'); p.el.scrollTop = pgEl ? pgEl.offsetTop : 0; }
+      else if (no === '1' && !flash) p.el.scrollTop = 0;
+      else p.el.scrollTop = el.offsetTop - 4;
+      if (flash) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+      setCurNo(el.dataset.no);
+    } else if (no === '1') { p.el.scrollTop = 0; p.el.scrollLeft = 0; }
+  }
+  // ── 웹판 2단: 한 쪽(화면 높이) = 왼쪽 단 → 오른쪽 단, 쪽은 아래로 ──
+  var SPLIT = '.art, .sh, .toc';
+  function paginate(p) {
+    var el = p.el, sec = el.querySelector('section.law'), H = el.clientHeight;
+    if (!sec || H < 160) return;
+    p.paginated = true; p.pgH = H;
+    var src = [].slice.call(sec.children), book = document.createElement('section');
+    book.className = 'law book'; sec.parentNode.replaceChild(book, sec);
+    var cols, ci, col, colH;
+    function div(c) { var d = document.createElement('div'); d.className = c; return d; }
+    function newPage() {
+      var pg = div('pg'); pg.style.minHeight = H + 'px'; book.appendChild(pg);
+      cols = [div('col'), div('col')]; pg.appendChild(cols[0]); pg.appendChild(cols[1]); ci = 0; col = cols[0];
+      colH = col.clientHeight;
+    }
+    function nextCol() {
+      var prev = col;
+      if (ci === 0) { ci = 1; col = cols[1]; } else newPage();
+      while (prev.children.length > 1 && prev.lastElementChild.classList.contains('hd')) col.insertBefore(prev.lastElementChild, col.firstChild);
+    }
+    function over() { return col.scrollHeight > colH + 1; }
+    function fit(parent, node) {
+      parent.appendChild(node);
+      if (!over()) return null;
+      parent.removeChild(node);
+      if (node.nodeType !== 1 || !node.matches(SPLIT) || !node.firstChild) return node;
+      if (node.childNodes.length === 1 && !(node.firstChild.nodeType === 1 && node.firstChild.matches(SPLIT))) return node;
+      var shell = node.cloneNode(false); parent.appendChild(shell);
+      while (node.firstChild) {
+        var c = node.firstChild, rem = fit(shell, c);
+        if (rem) { node.insertBefore(rem, node.firstChild); break; }
+      }
+      if (!shell.childNodes.length) { parent.removeChild(shell); return node; }
+      if (!node.childNodes.length) return null;
+      node.removeAttribute('id'); node.classList.add('cont');
+      return node;
+    }
+    // 빈 단에도 안 들어가는 긴 단락: 첫 조각만 억지로 넣고(쪽이 길어짐) 나머지는 다음 단으로
+    function force(parent, node) {
+      if (node.nodeType !== 1 || !node.matches(SPLIT) || !node.firstChild) { parent.appendChild(node); return null; }
+      var shell = node.cloneNode(false); parent.appendChild(shell);
+      var r = force(shell, node.firstChild);
+      if (r) node.insertBefore(r, node.firstChild);
+      if (!node.firstChild) return null;
+      node.removeAttribute('id'); node.classList.add('cont');
+      return node;
+    }
+    newPage();
+    src.forEach(function (b) {
+      var rem = b, guard = 0;
+      while (rem && guard++ < 400) {
+        rem = fit(col, rem);
+        if (rem) { if (!col.firstChild) rem = force(col, rem); if (rem) nextCol(); }
+      }
+    });
+    if (!cols[1].firstChild && !cols[0].firstChild && book.children.length > 1) book.removeChild(book.lastChild);
+  }
+  function pageAt(p, pgs) {
+    var y = p.el.scrollTop + p.pgH / 2, lo = 0, hi = pgs.length - 1, k = 0;
+    while (lo <= hi) { var mid = (lo + hi) >> 1; if (pgs[mid].offsetTop <= y) { k = mid; lo = mid + 1; } else hi = mid - 1; }
+    return k;
+  }
+  function colGeom(el) {
+    var cs = getComputedStyle(el), pl = parseFloat(cs.paddingLeft) || 0, pr = parseFloat(cs.paddingRight) || 0, gap = parseFloat(cs.columnGap) || 0;
+    var cw = el.clientWidth - pl - pr;
+    return { pl: pl, step: cw + gap };
+  }
+  var scrollT;
+  function onScroll(e) {
+    var el = e.currentTarget;
+    syncScrub();
+    clearTimeout(scrollT);
+    scrollT = setTimeout(function () {
+      var p = panes[T.cur];
+      if (p && p.cols && p.el === el) {
+        var g = colGeom(el), target = Math.round(el.scrollLeft / g.step) * g.step;
+        if (Math.abs(target - el.scrollLeft) > 2) { el.scrollTo({ left: target, behavior: 'smooth' }); return; }
+      }
+      updateRun();
+    }, 140);
+  }
+  // ── 넘김 막대(하단 탭 위) ──
+  var scrubbing = false;
+  function scrollMax(p) { return p.cols ? p.el.scrollWidth - p.el.clientWidth : p.el.scrollHeight - p.el.clientHeight; }
+  function scrollPos(p) { return p.cols ? p.el.scrollLeft : p.el.scrollTop; }
+  function syncScrub() {
+    var p = panes[T.cur], r = $('#scrubR');
+    if (!p || scrubbing || !S.scrub) return;
+    var m = scrollMax(p); r.value = m > 0 ? Math.round(scrollPos(p) / m * 1000) : 0;
+  }
+  function buildTicks() {
+    var p = panes[T.cur], box = $('#scrubTicks'), out = [];
+    if (p && S.scrub && !p.cols) {
+      var m = scrollMax(p);
+      if (m > 0) {
+        var l0 = p.el.querySelectorAll('.hd.l0'), sel = l0.length >= 2 ? '.hd.l0, .hd.l1' : '.hd.l0, .hd.l1, .hd.l2';
+        var hs = p.el.querySelectorAll(sel);
+        if (hs.length > 90) hs = l0.length >= 2 ? l0 : p.el.querySelectorAll('.hd.l0, .hd.l1');
+        [].forEach.call(hs, function (h) {
+          var x = Math.min(100, Math.max(0, h.offsetTop / m * 100));
+          out.push('<i class="' + (h.classList.contains('l0') || (!l0.length && h.classList.contains('l1')) ? 'mj' : '') + '" style="left:' + x.toFixed(2) + '%"></i>');
+        });
+      }
+    }
+    box.innerHTML = out.join('');
+  }
+  function headBefore(el) {
+    var n = el, k = 0;
+    while (n && k++ < 2000) { n = n.previousElementSibling; if (n && n.classList.contains('hd')) return n.textContent.replace(/\s+/g, ' ').trim(); }
+    return '';
+  }
+  (function initScrub() {
+    var r = $('#scrubR'), tip = $('#scrubTip');
+    function move() {
+      var p = panes[T.cur]; if (!p) return;
+      scrubbing = true;
+      var v = +r.value / 1000, m = scrollMax(p);
+      if (p.cols) p.el.scrollLeft = v * m; else p.el.scrollTop = v * m;
+      var vr = visibleRange(p);
+      if (vr) {
+        var a = vr.f;
+        var lab = a.querySelector('b.ah'); var hd = headBefore(a);
+        tip.innerHTML = (hd ? '<span>' + esc(hd) + '</span>' : '') + '<b>' + esc(lab ? lab.textContent : noLabel(a.dataset.no)) + '</b>';
+      }
+      var w = r.clientWidth - 28;
+      tip.style.left = Math.max(70, Math.min(window.innerWidth - 70, r.getBoundingClientRect().left + 14 + w * v)) + 'px';
+      tip.hidden = false;
+    }
+    function end() {
+      if (!scrubbing) return;
+      scrubbing = false; tip.hidden = true;
+      var p = panes[T.cur];
+      if (p && p.cols) { var g = colGeom(p.el); p.el.scrollLeft = Math.round(p.el.scrollLeft / g.step) * g.step; }
+      if (p && p.paged && p.pgH) { var pgs = p.el.querySelectorAll('.pg'); if (pgs.length) p.el.scrollTop = pgs[pageAt(p, pgs)].offsetTop; }
+      updateRun(); syncScrub();
+    }
+    r.addEventListener('input', move);
+    r.addEventListener('change', end);
+    r.addEventListener('pointerup', end);
+    r.addEventListener('touchend', end);
+  })();
+  function visibleRange(p) {
+    var arts = p.el.querySelectorAll('.art'); if (!arts.length) return null;
+    var first = null, last = null;
+    if (p.paged && p.paginated) {
+      var pgs = p.el.querySelectorAll('.pg'), k = pageAt(p, pgs);
+      for (var q = k; q >= 0 && !first; q--) { var as = pgs[q].querySelectorAll('.art'); if (as.length) { first = q === k ? as[0] : as[as.length - 1]; last = as[as.length - 1]; } }
+      return first ? { f: first, l: last } : null;
+    }
+    if (p.cols) {
+      var pr = p.el.getBoundingClientRect();
+      for (var i = 0; i < arts.length; i++) {
+        var r = arts[i].getBoundingClientRect();
+        if (r.right > pr.left + 4 && r.left < pr.right - 4 && r.bottom > pr.top) { if (!first) first = arts[i]; last = arts[i]; }
+        else if (first && r.left >= pr.right) break;
+      }
+    } else {
+      var top = p.el.scrollTop + 6, bot = p.el.scrollTop + p.el.clientHeight - 6, lo = 0, hi = arts.length - 1, f = 0;
+      while (lo <= hi) { var mid = (lo + hi) >> 1; if (arts[mid].offsetTop + arts[mid].offsetHeight <= top) lo = mid + 1; else { f = mid; hi = mid - 1; } }
+      first = arts[f];
+      for (var j = f; j < arts.length && arts[j].offsetTop < bot; j++) last = arts[j];
+    }
+    return first ? { f: first, l: last || first } : null;
+  }
+  function updateRun() {
+    var t = T.list[T.cur], p = panes[T.cur];
+    var ed = edOf(t.law, t.ed);
+    $('#runR').textContent = ed.name;
+    var r = p ? visibleRange(p) : null;
+    if (r) {
+      setCurNo(r.f.dataset.no);
+      var a = short(r.f.dataset.no), b = short(r.l.dataset.no);
+      $('#runL').textContent = lawLabel(t.law) + '(제' + a + '조' + (a !== b ? '~제' + b + '조' : '') + ')';
+    } else $('#runL').textContent = lawLabel(t.law);
+  }
+  function setCurNo(no) {
+    var t = T.list[T.cur];
+    if (t.no !== no) { t.no = no; saveT(); renderTabs(); }
+    renderTop();
+  }
+  function renderTabs() {
+    $('#tabs').innerHTML = T.list.slice(0, S.ntabs).map(function (t, i) {
+      return '<button data-i="' + i + '" class="' + (i === T.cur ? 'on' : '') + '"><span class="tl">' + esc(lawLabel(t.law)) + '</span><span class="tn">' + short(t.no) + '조</span></button>';
+    }).join('');
+  }
+  function renderTop() {
+    var t = T.list[T.cur];
+    $('#lawTitle').textContent = t.law;
+    $('#btnJump').innerHTML = '제<b>' + esc(short(t.no)) + '</b>조';
+  }
+
+  // ───────── 시트 ─────────
+  var sheetOpen = false, onSheetClose = null;
+  function openSheet(title, html, full, onClose) {
+    $('#sheetTitle').textContent = title;
+    $('#sheetBody').innerHTML = html;
+    $('#sheet').classList.toggle('full', !!full);
+    $('#sheet').hidden = false; $('#scrim').hidden = false; $('#sheetBody').scrollTop = 0;
+    onSheetClose = onClose || null;
+    if (!sheetOpen) { history.pushState({ sheet: 1 }, ''); sheetOpen = true; }
+  }
+  function closeSheet(fromPop) {
+    if (!sheetOpen) return;
+    $('#sheet').hidden = true; $('#scrim').hidden = true; sheetOpen = false;
+    var cb = onSheetClose; onSheetClose = null;
+    if (!fromPop) { ignorePop = true; history.back(); }
+    if (cb) cb();
+  }
+  var navStack = [], ignorePop = false;
+  window.addEventListener('popstate', function () {
+    if (ignorePop) { ignorePop = false; return; }
+    if (sheetOpen) { closeSheet(true); return; }
+    if (navStack.length) { var b = navStack.pop(); scrollToNo(panes[T.cur], b, true); }
+  });
+
+  function openLawPicker(ti) {
+    var cur = T.list[ti];
+    var h = EDITIONS.map(function (e) {
+      return '<div class="grp">〔' + e.name + '〕</div>' + e.laws.map(function (n) {
+        var gh = groupHead(e, n);
+        var m = metaOf(n);
+        var sub = m ? (m.ef ? '시행 ' + kdate(m.ef) + ' · ' : '') + (m.n || '') + '개 조' + (META[n] ? '' : m.src === 'seed' ? ' · 키트 원문' : '') : (TREATY[n] ? '법제처에서 받아야 함' : '본문 없음');
+        return gh + '<button class="row' + (n === cur.law && e.id === cur.ed ? ' cur' : '') + '" data-law="' + esc(n) + '" data-ed="' + e.id + '"><span class="main">' + esc(n) + '<div class="sub">' + sub + '</div></span></button>';
+      }).join('');
+    }).join('');
+    openSheet((ti + 1) + '번 탭에 펼칠 법령', h, true);
+    $('#sheetBody').onclick = function (e) {
+      var b = e.target.closest('[data-law]'); if (!b) return;
+      var name = b.getAttribute('data-law'), ed = b.getAttribute('data-ed');
+      if (T.list[ti].law !== name) { T.list[ti] = { law: name, no: '1', ed: ed }; if (panes[ti]) panes[ti].positioned = false; }
+      else T.list[ti].ed = ed;
+      saveT(); closeSheet(); showTab(ti);
+    };
+  }
+
+  function openToc(mode) {
+    var p = panes[T.cur]; if (!p || !p.items) return;
+    var items = p.items, t = T.list[T.cur], h = '';
+    mode = mode || 'toc';
+    var seg = '<div class="seg"><button data-mode="toc" class="' + (mode === 'toc' ? 'on' : '') + '">목차</button><button data-mode="rev" class="' + (mode === 'rev' ? 'on' : '') + '">개정·시행예정</button></div>';
+    if (mode === 'toc') {
+      var heads = [];
+      items.forEach(function (it) {
+        if (it.t === 'h') heads.push({ it: it, first: null });
+        else if (it.t === 'a') for (var q = heads.length - 1; q >= 0 && !heads[q].first; q--) heads[q].first = it.no;
+      });
+      h = heads.length ? '<div class="toc2">' + heads.map(function (x) {
+        var sh = splitHead(x.it.text);
+        return '<button class="row lv' + headLv(x.it.text, x.it.lv) + '" data-no="' + (x.first || '') + '"><span class="main">' + esc((sh.num ? sh.num + ' ' : '') + sh.name) + '</span><span class="sub">' + (x.first ? noLabel(x.first) : '') + '</span></button>';
+      }).join('') + '</div>' : '<div class="empty">편·장·절 구분이 없는 법령입니다.<br>조문 이동(제○조)을 이용하세요.</div>';
+    } else {
+      var cut = baseDate(), rc = revCut(), m = META[t.law] || {}, ns = {};
+      if (isFresh(m)) (m.changed || []).forEach(function (n) { ns[n] = 1; });
+      var list = [];
+      items.forEach(function (a) {
+        if (a.t !== 'a') return;
+        var sp = splitFut(a, cut), d = sp.ap ? sp.ap.d : a.last;
+        var why = [];
+        if (ns[a.no]) why.push('최근 최신화에서 바뀜');
+        if (sp.pend.length) why.push('시행예정 ' + sp.pend.map(function (f) { return kdate(f.d); }).join(', ') + ' (음영)');
+        if (d && d >= rc) why.push((sp.ap ? '시행 ' : a.del ? '삭제 ' : '개정 ') + kdate(d));
+        if (why.length) list.push({ a: a, why: why, k: (ns[a.no] ? '2' : sp.pend.length ? '1' : '0') + (d || '') });
+      });
+      list.sort(function (x, y) { return x.k < y.k ? 1 : -1; });
+      h = '<div class="small" style="margin:2px 4px 6px">본문 기준일 ' + kdate(cut) + ' · 개정 표시 ' + (S.rev === 'off' ? '끔' : kdate(rc) + ' 이후') + '</div>' +
+        (list.length ? list.map(function (x) {
+          return '<button class="row" data-no="' + x.a.no + '"><span class="main">' + x.a.label + (x.a.title ? '(' + esc(x.a.title) + ')' : '') + '<div class="sub">' + x.why.join(' · ') + '</div></span></button>';
+        }).join('') : '<div class="empty">해당 조문이 없습니다.</div>');
+    }
+    openSheet(lawLabel(t.law) + (mode === 'toc' ? ' 목차' : ' 개정 조문'), seg + h);
+    $('#sheetBody').onclick = function (e) {
+      var sb = e.target.closest('[data-mode]'); if (sb) { openToc(sb.getAttribute('data-mode')); return; }
+      var b = e.target.closest('[data-no]'); if (!b || !b.getAttribute('data-no')) return;
+      var no = b.getAttribute('data-no'); closeSheet();
+      setTimeout(function () { scrollToNo(panes[T.cur], no, true); updateRun(); }, 30);
+    };
+  }
+
+  function openJump() {
+    var val = '';
+    var h = '<div class="jumpdisp" id="jd"></div><div class="keys">' +
+      ['1', '2', '3', '4', '5', '6', '7', '8', '9', '의', '0', '⌫'].map(function (k) { return '<button data-k="' + k + '">' + k + '</button>'; }).join('') +
+      '</div><div class="keys" style="grid-template-columns:1fr 2fr;margin-top:8px"><button data-k="C">지움</button><button class="go" data-k="GO">이동</button></div>';
+    openSheet(lawLabel(T.list[T.cur].law) + ' 조문 이동', h);
+    function show() {
+      var m = val.split('의');
+      $('#jd').innerHTML = val ? '제<b>' + esc(m[0] || '') + '</b>조' + (m.length > 1 ? '의<b>' + esc(m[1] || '') + '</b>' : '') : '<span class="small">조문 번호</span>';
+    }
+    show();
+    $('#sheetBody').onclick = function (e) {
+      var b = e.target.closest('[data-k]'); if (!b) return;
+      var k = b.getAttribute('data-k');
+      if (k === '⌫') val = val.slice(0, -1);
+      else if (k === 'C') val = '';
+      else if (k === '의') { if (val && val.indexOf('의') < 0) val += '의'; }
+      else if (k === 'GO') {
+        var m = val.split('의'); if (!m[0]) return;
+        var no = String(+m[0]) + (m[1] ? '-' + (+m[1]) : '');
+        closeSheet(); jumpFromUser = true;
+        setTimeout(function () { scrollToNo(panes[T.cur], no, true); jumpFromUser = false; updateRun(); }, 30);
+        return;
+      } else if (val.length < 9) val += k;
+      show();
+    };
+  }
+
+  var lastQ = '', lastScope = 'law';
+  function openSearch() {
+    var h = '<div class="sinput"><input id="q" type="search" placeholder="낱말 검색 (띄어 쓰면 모두 포함)" value="' + esc(lastQ) + '" enterkeyhint="search"><button id="qgo">찾기</button></div>' +
+      '<div class="seg"><button data-sc="law" class="' + (lastScope === 'law' ? 'on' : '') + '">이 법령</button><button data-sc="ed" class="' + (lastScope === 'ed' ? 'on' : '') + '">이 편</button><button data-sc="all" class="' + (lastScope === 'all' ? 'on' : '') + '">전체</button></div><div id="qres"></div>';
+    openSheet('검색', h, true);
+    var q = $('#q');
+    setTimeout(function () { q.focus(); }, 60);
+    function run() {
+      lastQ = q.value.trim(); if (!lastQ) { $('#qres').innerHTML = ''; return; }
+      q.blur();
+      var t = T.list[T.cur];
+      var names = lastScope === 'law' ? [t.law] : lastScope === 'ed' ? edOf(t.law, t.ed).laws : ALL;
+      $('#qres').innerHTML = '<div class="empty">찾는 중…</div>';
+      Promise.all(names.map(function (n) { return getItems(n).then(function (it) { return [n, it]; }); })).then(function (rs) {
+        var words = lastQ.split(/\s+/).filter(Boolean), hits = [], LIMIT = 500;
+        rs.forEach(function (r) {
+          if (!r[1]) return;
+          r[1].forEach(function (a) {
+            if (a.t !== 'a' || hits.length >= LIMIT) return;
+            var full = a.label + ' ' + a.title + ' ' + a.p.map(function (x) { return x[1]; }).join(' ');
+            (a.fut || []).forEach(function (f) { full += ' ' + f.p.map(function (x) { return x[1]; }).join(' '); });
+            for (var w = 0; w < words.length; w++) if (full.indexOf(words[w]) < 0) return;
+            var idx = full.indexOf(words[0]);
+            hits.push({ law: r[0], a: a, snip: full.slice(Math.max(0, idx - 28), idx + 72) });
+          });
+        });
+        if (!hits.length) { $('#qres').innerHTML = '<div class="empty">찾는 낱말이 없습니다.</div>'; return; }
+        var re = new RegExp('(' + words.map(function (w) { return esc(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|') + ')', 'g');
+        $('#qres').innerHTML = '<div class="small" style="margin:4px">' + hits.length + (hits.length >= LIMIT ? '건 이상' : '건') + '</div>' + hits.map(function (x) {
+          return '<button class="hit" data-law="' + esc(x.law) + '" data-no="' + x.a.no + '"><div class="hl">' + (lastScope !== 'law' ? esc(lawLabel(x.law)) + ' ' : '') + x.a.label + (x.a.title ? '(' + esc(x.a.title) + ')' : '') +
+            '</div><div class="hs">…' + esc(x.snip).replace(re, '<mark>$1</mark>') + '…</div></button>';
+        }).join('');
+      });
+    }
+    q.addEventListener('keydown', function (e) { if (e.key === 'Enter') run(); });
+    $('#qgo').onclick = run;
+    $('#sheetBody').onclick = function (e) {
+      var sc = e.target.closest('[data-sc]');
+      if (sc) { lastScope = sc.getAttribute('data-sc'); [].forEach.call(document.querySelectorAll('[data-sc]'), function (b) { b.classList.toggle('on', b === sc); }); run(); return; }
+      var b = e.target.closest('.hit'); if (!b) return;
+      var law = b.getAttribute('data-law'), no = b.getAttribute('data-no');
+      closeSheet();
+      var t = T.list[T.cur];
+      if (t.law !== law) { T.list[T.cur] = { law: law, no: no, ed: edOf(law, t.ed).id }; saveT(); }
+      setTimeout(function () { showTab(T.cur, no, true); }, 30);
+    };
+    if (lastQ) run();
+  }
+
+  // ───────── 설정 ─────────
+  var dirty = false;
+  function segOn(b) { [].forEach.call(b.parentNode.children, function (x) { x.classList.toggle('on', x === b); }); }
+  function seg(attr, cur, opts) { return '<div class="seg">' + opts.map(function (o) { return '<button data-' + attr + '="' + o[0] + '" class="' + (String(cur) === String(o[0]) ? 'on' : '') + '">' + o[1] + '</button>'; }).join('') + '</div>'; }
+  function isoOf(d) { return d.slice(0, 4) + '-' + d.slice(4, 6) + '-' + d.slice(6); }
+  function openSettings() {
+    var dl = ALL.filter(function (n) { return META[n]; }).length;
+    var h =
+      '<div class="set"><label>글자 크기 <span id="fsv">' + S.fs + '</span></label><input type="range" id="fs" min="14" max="32" value="' + S.fs + '">' +
+      '<label style="margin-top:10px;display:block;font-weight:700">줄 간격 <span id="lhv">' + Math.round(S.lh * 100) + '%</span></label>' +
+      seg('lh', S.lh, [[1.38, '법전 138%'], [1.45, '145%'], [1.6, '160%'], [1.8, '180%']]) +
+      '<div class="preview" style="font-size:var(--fs);line-height:var(--lh)"><b class="ah">제3조(대항력 등)</b> ① 임대차는 그 등기(登記)가 없는 경우에도 임차인(賃借人)이 주택의 인도(引渡)와 주민등록을 마친 때에는 그 다음 날부터 제삼자에 대하여 효력이 생긴다. <span class="tg">&lt;개정 2013·8·13&gt;</span></div></div>' +
+      '<div class="set"><label>본문 기준일</label>' + seg('base', S.base, [['exam', '제16회 시험일'], ['today', '오늘(현행)'], ['date', '직접']]) +
+      '<div id="baseBox" ' + (S.base === 'date' ? '' : 'hidden') + '><input type="date" id="baseDate" value="' + isoOf(S.baseDate) + '" style="font-size:17px;padding:8px;border-radius:4px;border:1.5px solid var(--rule);background:var(--paper);color:var(--ink)"></div>' +
+      '<div class="small">기준일까지 시행되는 개정은 본문에 넣고, 그 뒤에 시행되는 개정규정은 법전처럼 음영과 〔시행일〕로 보여 줍니다. 제16회 안내사항: 2026. 11. 2.까지 공포되고 시험 시행일(2027. 1. 12.~16.) 현재 시행 중인 법령.</div></div>' +
+      '<div class="set"><label>개정 표시(조문 옆 날짜)</label>' + seg('rev', S.rev, [['1y', '1년'], ['2y', '2년'], ['3y', '3년'], ['5y', '5년'], ['date', '날짜'], ['off', '끄기']]) +
+      '<div id="revBox" ' + (S.rev === 'date' ? '' : 'hidden') + '><input type="date" id="revDate" value="' + isoOf(S.revDate) + '" style="font-size:17px;padding:8px;border-radius:4px;border:1.5px solid var(--rule);background:var(--paper);color:var(--ink)"></div></div>' +
+      '<div class="set"><label>법령 앞 목차</label>' + seg('toc', S.toc ? 1 : 0, [[1, '보이기'], [0, '숨기기']]) + '</div>' +
+      '<div class="set"><label>넘김 막대(하단 탭 위)</label>' + seg('scrub', S.scrub ? 1 : 0, [[1, '보이기'], [0, '숨기기']]) + '<div class="small">막대를 끌면 법령 처음부터 끝까지 크게 넘어가고, 손가락 위에 지금 조문과 편·장이 뜹니다. 눈금은 편·장 위치입니다.</div></div>' +
+      '<div class="set"><label>2단 조판</label>' + seg('cols', S.cols, [['off', '끄기'], ['land', '가로 화면에서'], ['on', '항상']]) + '<div class="small">' + (WEB ? '2단은 한 쪽을 왼쪽 단 → 오른쪽 단으로 읽고, 다음 쪽은 아래로 스크롤합니다.' : '2단은 좌우로 넘겨 읽습니다.') + ' 휴대폰 세로 화면에서는 단이 좁아집니다.</div></div>' +
+      '<div class="set"><label>하단 탭 수</label>' + seg('nt', S.ntabs, [[2, '2'], [3, '3'], [4, '4'], [5, '5'], [6, '6'], [8, '8']]) + '</div>' +
+      '<div class="set"><label>화면</label>' + seg('th', S.theme, [['auto', '자동'], ['light', '밝게'], ['dark', '어둡게']]) +
+      seg('lk', S.links ? 1 : 0, [[1, '조문 인용 연결 켜기'], [0, '끄기']]) + '<div class="small">본문의 ‘제○조’를 눌러 그 조문으로 갑니다(뒤로가기로 복귀).</div></div>' +
+      (window.LB_CATALOGS ? '<div class="set"><label>수록 범위</label>' + seg('scope', S.scope || 'full', [['basic', '변시 법전 (' + window.LB_CATALOGS.basic.count + '개)'], ['full', '시험용 법전 (' + window.LB_CATALOGS.full.count + '개)']]) + '<div class="small">바꾸면 화면을 다시 엽니다. 탭에 펼친 법령이 새 범위에 없으면 민법으로 돌아갑니다.</div></div>' : '') +
+      (WEB ? '<div class="set"><label>법령 데이터</label><div class="small">웹판은 ' + esc(window.LB_WEB.date || '') + ' 법제처 원문(시행예정 조문 포함)을 넣어 둔 판입니다. 브라우저 보안 때문에 웹판은 법제처에서 직접 최신화할 수 없습니다. 새 원문이 필요하면 Claude에게 웹판 갱신을 요청하세요.</div></div>' :
+      '<div class="set"><label>법령 데이터 (법제처 원문 ' + dl + '/' + ALL.length + ')</label>' +
+      '<div class="small">국가법령정보센터(law.go.kr)의 현행 원문과 시행예정 조문을 받아 기기에 저장합니다. 최신화는 바뀐 법령만 새로 받습니다. 사흘마다 앱을 열 때 자동으로 확인합니다.</div>' +
+      '<button class="btn" id="upd">최신화</button><div class="prog" hidden id="pg"><i></i></div><div class="small" id="pgt"></div><div id="updres"></div>' +
+      '<button class="btn ghost" id="updAll">전체 다시 받기</button><div id="lawList">' + lawStatusHtml() + '</div></div>') +
+      '<div class="set small">출처: 국가법령정보센터(법제처). 국가책임초안은 사용자가 제공한 자료(국제법위원회 2001년 초안 국문). 법령의 효력은 관보에 따릅니다. 시험장에서는 배부되는 시험용 법전만 쓸 수 있습니다.</div>';
+    openSheet('설정', h, true, function () { if (dirty) { dirty = false; refreshAll(); } });
+    $('#fs').oninput = function () { S.fs = +this.value; $('#fsv').textContent = S.fs; applySettings(); saveS(); dirty = true; };
+    var bd = $('#baseDate'); bd.onchange = function () { if (this.value) { S.baseDate = this.value.replace(/-/g, ''); saveS(); dirty = true; } };
+    var rd = $('#revDate'); rd.onchange = function () { if (this.value) { S.revDate = this.value.replace(/-/g, ''); saveS(); dirty = true; } };
+    if ($('#upd')) { $('#upd').onclick = function () { runUpdate(false); }; $('#updAll').onclick = function () { runUpdate(true); }; }
+    $('#sheetBody').onclick = function (e) {
+      var b;
+      if ((b = e.target.closest('[data-lh]'))) { S.lh = +b.getAttribute('data-lh'); $('#lhv').textContent = Math.round(S.lh * 100) + '%'; applySettings(); }
+      else if ((b = e.target.closest('[data-base]'))) { S.base = b.getAttribute('data-base'); $('#baseBox').hidden = S.base !== 'date'; }
+      else if ((b = e.target.closest('[data-rev]'))) { S.rev = b.getAttribute('data-rev'); $('#revBox').hidden = S.rev !== 'date'; }
+      else if ((b = e.target.closest('[data-toc]'))) S.toc = b.getAttribute('data-toc') === '1';
+      else if ((b = e.target.closest('[data-scrub]'))) { S.scrub = b.getAttribute('data-scrub') === '1'; applySettings(); }
+      else if ((b = e.target.closest('[data-scope]'))) { S.scope = b.getAttribute('data-scope'); segOn(b); saveS(); setTimeout(function () { location.reload(); }, 150); return; }
+      else if ((b = e.target.closest('[data-cols]'))) S.cols = b.getAttribute('data-cols');
+      else if ((b = e.target.closest('[data-nt]'))) { S.ntabs = +b.getAttribute('data-nt'); if (T.cur >= S.ntabs) T.cur = 0; saveT(); renderTabs(); }
+      else if ((b = e.target.closest('[data-th]'))) { S.theme = b.getAttribute('data-th'); applySettings(); }
+      else if ((b = e.target.closest('[data-lk]'))) S.links = b.getAttribute('data-lk') === '1';
+      else return;
+      segOn(b); saveS(); dirty = true;
+    };
+  }
+  function groupHead(e, n) {
+    if (!e.groups) return '';
+    for (var i = 0; i < e.groups.length; i++) if (e.groups[i].laws[0] === n) return '<div class="sgrp">' + esc(e.groups[i].name) + '</div>';
+    return '';
+  }
+  function lawStatusHtml() {
+    return EDITIONS.map(function (e) {
+      return '<div class="grp">〔' + e.name + '〕</div>' + e.laws.map(function (n) {
+        var gh = groupHead(e, n);
+        var m = metaOf(n);
+        var s = META[n] ? '법제처 원문 · ' + (m.ef ? '시행 ' + kdate(m.ef) + ' · ' : '') + new Date(m.at).toLocaleDateString('ko-KR') + ' 받음'
+          : m && m.src === 'seed' ? '키트 원문(2026. 9. 19.) · 최신화 필요' : m && m.src === 'static' ? '제공 자료' : '없음';
+        return gh + '<div class="row" style="cursor:default"><span class="main">' + esc(n) + '<div class="sub">' + s + '</div></span></div>';
+      }).join('');
+    }).join('');
+  }
+  function summary(r) {
+    var lines = [], upd = r.ok.filter(function (x) { return x.updated; }), neu = r.ok.filter(function (x) { return !x.updated; });
+    if (neu.length) lines.push('법제처 원문으로 교체 ' + neu.length + '개');
+    if (upd.length) lines.push('<b>개정 반영 ' + upd.length + '개</b>: ' + upd.map(function (x) { return esc(lawLabel(x.name)) + '(' + x.changed.length + '개 조)'; }).join(', '));
+    if (r.same.length) lines.push('변동 없음 ' + r.same.length + '개');
+    if (r.fail.length) lines.push('받지 못함 ' + r.fail.length + '개: ' + r.fail.map(function (x) { return esc(lawLabel(x.name)) + '(' + esc(x.err) + ')'; }).join(', '));
+    return lines.join('<br>');
+  }
+  function runUpdate(force) {
+    var u = $('#upd'), ua = $('#updAll'); if (u) u.disabled = true; if (ua) ua.disabled = true;
+    var pg = $('#pg'); if (pg) pg.hidden = false;
+    updateAll(force, function (i, n, name) {
+      var bar = $('#pg i'); if (bar) bar.style.width = Math.round(i / n * 100) + '%';
+      var t = $('#pgt'); if (t) t.textContent = (i + 1) + '/' + n + ' ' + name;
+    }).then(function (r) {
+      var bar = $('#pg i'); if (bar) bar.style.width = '100%';
+      var t = $('#pgt'); if (t) t.textContent = '';
+      var box = $('#updres'); if (box) box.innerHTML = '<div class="res">' + summary(r) + '</div>';
+      var ll = $('#lawList'); if (ll) ll.innerHTML = lawStatusHtml();
+      if (u) u.disabled = false; if (ua) ua.disabled = false;
+      if (r.ok.length) dirty = true;
+      toast(r.fail.length === ALL.length - Object.keys(STATIC).length ? '법제처에 연결하지 못했습니다' : r.fail.length ? '일부 법령을 받지 못했습니다' : '최신화 완료');
+    }, function (e) { toast(e.message); if (u) u.disabled = false; if (ua) ua.disabled = false; });
+  }
+  function refreshAll() {
+    applySettings();
+    Object.keys(panes).forEach(function (k) { panes[k].el.remove(); delete panes[k]; });
+    showTab(T.cur < S.ntabs ? T.cur : 0);
+  }
+  function autoUpdate() {
+    if (WEB) return;
+    var last = lsGet('lb.lastCheck', 0);
+    var need = !Object.keys(META).length || Date.now() - last > 3 * 864e5;
+    if (!need || (navigator.onLine === false)) return;
+    toast('법제처 원문 확인 중…', 2000);
+    updateAll(false).then(function (r) {
+      if (r.ok.length) {
+        refreshAll();
+        var upd = r.ok.filter(function (x) { return x.updated && x.changed.length; });
+        toast(upd.length ? '개정 반영: ' + upd.map(function (x) { return lawLabel(x.name); }).join(', ') : '법제처 원문으로 맞췄습니다', 3500);
+      } else if (r.fail.length && !r.same.length) toast('법제처에 연결하지 못해 저장된 원문을 보여 줍니다', 3500);
+    }, function () { });
+  }
+
+  // ───────── 본문 누름 ─────────
+  function onPaneClick(e) {
+    if (e.target.closest('[data-act="dl"]')) { openSettings(); setTimeout(function () { runUpdate(false); }, 50); return; }
+    var tb = e.target.closest('.toc [data-no]');
+    if (tb) { var tn = tb.getAttribute('data-no'); if (tn) { navStack.push(T.list[T.cur].no); history.pushState({ jump: 1 }, ''); scrollToNo(panes[T.cur], tn, true); updateRun(); } return; }
+    var x = e.target.closest('.xref'); if (!x) return;
+    navStack.push(T.list[T.cur].no); history.pushState({ jump: 1 }, '');
+    jumpFromUser = true; scrollToNo(panes[T.cur], x.getAttribute('data-no'), true); jumpFromUser = false; updateRun();
+  }
+
+  // ───────── 연결 ─────────
+  $('#tabs').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-i]'); if (!b) return;
+    var i = +b.getAttribute('data-i');
+    if (i === T.cur) openLawPicker(i); else showTab(i);
+  });
+  $('#btnLaw').onclick = function () { openLawPicker(T.cur); };
+  $('#btnToc').onclick = function () { openToc('toc'); };
+  $('#btnJump').onclick = function () { if (panes[T.cur] && panes[T.cur].items) openJump(); };
+  $('#btnSearch').onclick = openSearch;
+  $('#btnSet').onclick = openSettings;
+  $('#scrim').onclick = function () { closeSheet(); };
+  $('#sheetClose').onclick = function () { closeSheet(); };
+  var lastCols = null;
+  var lastW = window.innerWidth, lastH = window.innerHeight, pgT;
+  window.addEventListener('resize', function () {
+    var c = colsOn();
+    if (lastCols !== null && c !== lastCols) refreshAll();
+    else if (WEB && c && (Math.abs(window.innerWidth - lastW) > 2 || Math.abs(window.innerHeight - lastH) > 120)) { clearTimeout(pgT); pgT = setTimeout(refreshAll, 250); }
+    lastCols = c; lastW = window.innerWidth; lastH = window.innerHeight; updateRun(); buildTicks(); syncScrub();
+  });
+  window.addEventListener('lbfontload', function () { if (panes[T.cur] && panes[T.cur].paged) refreshAll(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { buildTicks(); syncScrub(); });
+
+  applySettings();
+  lastCols = colsOn();
+  renderTabs(); renderTop();
+  showTab(T.cur).then(function () { setTimeout(autoUpdate, 800); });
+})();
+
+</script>
+<script>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  navigator.serviceWorker.register('sw.js').catch(function () {});
+}
+</script>
+</body>
+</html>
